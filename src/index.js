@@ -71,6 +71,10 @@
   }
   // Sentry DSN 正则
   var dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
+  // Sentry SDK 版本号
+  var sdkVersion = '1.0.0';
+  // Sentry SDK 名称
+  var sdkName = 'sentry.javascript.browser';
   // 是否允许上报日志，默认为允许上报
   Sentry.enabled = true;
   // 上报的SDK平台
@@ -113,6 +117,7 @@
   }
   /**
    * @method 解析DSN地址
+   * @param {Object} options Sentry SDK 配置项对象
    */
   Sentry.parseDSN = function() {
     // 非法的dns
@@ -120,7 +125,7 @@
       outputMsg('please check if the "init" method was called!', 'error');
       return;
     }
-    var matches = Sentry.dsn.exec(dsnReg);
+    var matches = dsnReg.exec(Sentry.dsn);
     var nodes = matches.slice(1);
     var protocol = nodes[0];
     var publicKey = nodes[1];
@@ -134,9 +139,118 @@
     }
   }
   /**
+   * @method 获取store接口请求配置
+   * @param {Object} options Sentry SDK 配置项对象
+   */
+  Sentry.getStoreOptions = function(options) {
+    // 非法的日志信息
+    if (typeof options !== 'object' || options === null) {
+      outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error');
+      return;
+    }
+    var basicRequestOptions = Sentry.parseDSN();
+    var url = basicRequestOptions.uri + '/api/' + basicRequestOptions.projectId + '/store/?sentry_version=7&sentry_client='+ sdkName + sdkVersion +'&sentry_key=' + basicRequestOptions.publicKey;
+    // 构造请求头
+    var headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    };
+    // 构造基础数据
+    var basicPayload = {
+      platform: Sentry.platform,
+      level: Sentry.level,
+      server_name: Sentry.serverName,
+      environment: Sentry.environment,
+      timestamp: new Date().toISOString(),
+      sdk: {
+        name: sdkName,
+        version: sdkVersion
+      },
+      request: {
+        headers: {
+          'User-Agent': navigator.userAgent
+        }
+      }
+    }
+    // 构造目标请求数据
+    var payload = mergeObject(basicPayload, options);
+    // 不存在user配置项，则设置一个默认配置
+    if (!payload.user) {
+      payload.user = {
+        ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
+      }
+    } else {
+      // 存在user配置项但是不存在user.ip_address配置子项
+      if (!payload.user.ip_address) {
+        payload.user.ip_address = '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
+      }
+    }
+    return {
+      url: url,
+      headers: headers,
+      payload: JSON.stringify(payload)
+    }
+  }
+  /**
+   * @method 通过envelope接口请求配置
+   */
+  Sentry.getEnvelopeOptions = function(options) {
+    // 非法的日志信息
+    if (typeof options !== 'object' || options === null) {
+      outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error');
+      return;
+    }
+    var basicRequestOptions = Sentry.parseDSN();
+    var url = basicRequestOptions.uri + '/api/' + basicRequestOptions.projectId + '/envelope/?sentry_version=7&sentry_client='+ sdkName + sdkVersion +'&sentry_key=' + basicRequestOptions.publicKey;
+    var headers = {};
+    var basicPayload = {
+      platform: Sentry.platform,
+      level: Sentry.level,
+      server_name: Sentry.serverName,
+      environment: Sentry.environment,
+      type: 'event',
+      sdk: {
+        name: sdkName,
+        version: sdkVersion
+      },
+      request: {
+        headers: {
+          'User-Agent': navigator.userAgent
+        }
+      }
+    };
+    // 构造目标请求数据
+    var targetPayload = mergeObject(basicPayload, options);
+    // 不存在user配置项，则设置一个默认配置
+    if (!targetPayload.user) {
+      targetPayload.user = {
+        ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
+      };
+    } else {
+      // 存在user配置项但是不存在user.ip_address配置子项
+      if (!targetPayload.user.ip_address) {
+        targetPayload.user.ip_address = '{{auto}}';// 用户ip地址，此处默认为服务器自动获取
+      }
+    }
+    var payloadHeaders = {
+      sent_at: new Date().toISOString(),
+      sdk: targetPayload.sdk
+    };
+    var payloadItem = {
+      type: targetPayload.type
+    };
+    var payload = JSON.stringify(payloadHeaders) + '\n' + JSON.stringify(payloadItem) + '\n' + JSON.stringify(targetPayload) + '\n';
+    return {
+      url: url,
+      headers: headers,
+      payload: payload
+    }
+  }
+  /**
    * @method 上传日志到日志服务器
    * @param {Object} options Sentry SDK 配置项对象
    */
+
   Sentry.uploadLog = function(options) {
     // 禁止上传日志
     if (!Sentry.enabled) return;
@@ -145,42 +259,18 @@
       outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error');
       return;
     }
-    var basicRequestOptions = parseDSN();
-    // 构造请求头
-    var headers = {
-      'Content-Type': 'application/json',
-      'X-Sentry-Auth': 'Sentry sentry_version=7,sentry_client=sentry-' + Sentry.platform + '/7.0,sentry_key=' + basicRequestOptions.publicKey
-    };
-    // 日志上传接口地址
-    var url = basicRequestOptions.uri + '/api/' + basicRequestOptions.projectId + '/store';
-    // 构造基础的请求数据
-    var basicPayload = {
-      platform: Sentry.platform,
-      level: Sentry.level,
-      server_name: Sentry.serverName,
-      environment: Sentry.environment,
-      timestamp: new Date().toISOString(),
-    };
-    // 构造目标请求数据
-    var targetPayload = mergeObject(basicPayload, options);
-    // 不存在user配置项，则设置一个默认配置
-    if (!targetPayload.user) {
-      targetPayload.user = {
-        ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-      }
-    } else {
-      // 存在user配置项但是不存在user.ip_address配置子项
-      if (!targetPayload.user.ip_address) {
-        targetPayload.user.ip_address = '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-      }
-    }
+    var basicRequestOptions = Sentry.parseDSN();
+    var requestOptions = options.envelope ? Sentry.getEnvelopeOptions(options) : Sentry.getStoreOptions(options);
+    var url = requestOptions.url;
+    var headers = requestOptions.headers;
+    var payload = requestOptions.payload;
     // 支持fecth请求
     if (isSupportedFetch()) {
       fetch(url, {
         method: 'POST',
-        mode: 'cors',
+        referrerPolicy: 'origin',
         headers: headers,
-        body: JSON.stringify(targetPayload)
+        body: payload,// body data type must match "Content-Type" header
       })
       .then(function(res) {
         return res.json()
@@ -193,6 +283,21 @@
       })
     } else {
       // 不支持fetch，使用原生XMLHttpRequest对象
+      var xhr = new XMLHttpRequest();
+      // xhr.onerror = reject;
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          var res = JSON.parse(xhr.response)
+          console.log(xhr)
+        }
+      };
+      xhr.open("POST", url);
+      for (var header in headers) {
+        if (Object.prototype.hasOwnProperty.call(headers, header)) {
+          xhr.setRequestHeader(header, headers[header]);
+        }
+      }
+      xhr.send(payload);
     }
   }
   /**
@@ -210,7 +315,7 @@
       return;
     }
     // 非法信息数据
-    if (typeof options.message !== 'object' || options.message === null) {
+    if (typeof options.message !== 'string' || options.message === '') {
       outputMsg('method "captureMessage" must pass the value of "message" on options params, please check again!', 'error');
       return;
     }
