@@ -162,6 +162,7 @@
       server_name: Sentry.serverName,
       environment: Sentry.environment,
       timestamp: new Date().toISOString(),
+      user: {},
       sdk: {
         name: sdkName,
         version: sdkVersion
@@ -174,16 +175,9 @@
     }
     // 构造目标请求数据
     var payload = mergeObject(basicPayload, options);
-    // 不存在user配置项，则设置一个默认配置
-    if (!payload.user) {
-      payload.user = {
-        ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-      }
-    } else {
-      // 存在user配置项但是不存在user.ip_address配置子项
-      if (!payload.user.ip_address) {
-        payload.user.ip_address = '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-      }
+    // 存在user配置项但是不存在user.ip_address配置子项
+    if (!payload.user.ip_address) {
+      payload.user.ip_address = '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
     }
     return {
       url: url,
@@ -209,6 +203,7 @@
       server_name: Sentry.serverName,
       environment: Sentry.environment,
       type: 'event',
+      user: {},
       sdk: {
         name: sdkName,
         version: sdkVersion
@@ -221,16 +216,9 @@
     };
     // 构造目标请求数据
     var targetPayload = mergeObject(basicPayload, options);
-    // 不存在user配置项，则设置一个默认配置
-    if (!targetPayload.user) {
-      targetPayload.user = {
-        ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-      };
-    } else {
-      // 存在user配置项但是不存在user.ip_address配置子项
-      if (!targetPayload.user.ip_address) {
-        targetPayload.user.ip_address = '{{auto}}';// 用户ip地址，此处默认为服务器自动获取
-      }
+    // 存在user配置项但是不存在user.ip_address配置子项
+    if (!targetPayload.user.ip_address) {
+      targetPayload.user.ip_address = '{{auto}}';// 用户ip地址，此处默认为服务器自动获取
     }
     var payloadHeaders = {
       sent_at: new Date().toISOString(),

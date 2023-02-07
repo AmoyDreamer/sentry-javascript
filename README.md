@@ -1,2 +1,2 @@
 # sentry-js-sdk
-Secondary packaging javascript plugin based on the official Sentry SDK.
+A generic Javascript SDK based on Self-Hosted Sentry.
