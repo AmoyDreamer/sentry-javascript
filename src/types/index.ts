@@ -27,7 +27,7 @@ export interface SDKOption {
 }
 // http-header字段参数配置项
 export interface HttpHeader {
-  'User-Agent'?: string
+  [key: string]: string
 }
 // request 参数配置项
 export interface RequestOption {
