@@ -1,5 +1,6 @@
 import typescript from '@rollup/plugin-typescript'
 import babel, { getBabelOutputPlugin } from '@rollup/plugin-babel'
+// import terser from '@rollup/plugin-terser'
 import path from 'path'
 import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
@@ -11,15 +12,15 @@ export default {
     {
       file: './dist/index.js',
       format: 'iife',
-      name: 'Sentry',
+      name: 'Sentry'
     },
     {
       file: './dist/index.common.js',
-      format: 'cjs',
+      format: 'cjs'
     },
     {
       file: './dist/index.esm.js',
-      format: 'esm',
+      format: 'esm'
     }
   ],
   plugins: [
@@ -27,6 +28,7 @@ export default {
     getBabelOutputPlugin({
       allowAllFormats: true,
       configFile: path.resolve(__dirname, 'babel.config.js')
-    })
+    }),
+    // terser()
   ]
 }

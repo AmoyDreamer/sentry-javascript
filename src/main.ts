@@ -1,5 +1,6 @@
 import type {
   BasicOptionsState,
+  InitOptions,
   ApiOptions,
   StoreApiOptions,
   HttpHeader,
@@ -12,6 +13,7 @@ import type {
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
 import { mergeObject } from './utils/object'
+import { getDataType } from './utils/data-type'
 // Sentry DSN 正则
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
 // Sentry SDK 版本号
@@ -29,14 +31,14 @@ const basicOptions: BasicOptionsState = {
   envelope: false
 }
 // 初始化SDK
-export function init(options: BasicOptionsState) {
+export function init(options: InitOptions) {
   // 非法地配置项对象参数
-  if (typeof options !== 'object' || options === null) {
+  if (getDataType(options) !== 'Object') {
     outputMsg('method "init" must pass a object variable, please check again!', 'error')
     return
   }
   // 非法的dsn参数
-  if (typeof options.dsn !== 'string') {
+  if (getDataType(options.dsn) !== 'String') {
     outputMsg('method "init" must pass the value of "dsn" on options params, please check again!', 'error')
     return
   }
@@ -45,6 +47,7 @@ export function init(options: BasicOptionsState) {
     outputMsg('"dsn" must be a valid value, please check again!', 'error')
     return
   }
+  // 设置dsn
   basicOptions.dsn = options.dsn
   // 合法的enabled参数值
   if (typeof options.enabled === 'boolean') {
@@ -95,7 +98,7 @@ function getAPIAddress(): string {
  */
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 非法的日志信息
-  if (typeof options !== 'object' || options === null) {
+  if (getDataType(options) !== 'Object') {
     outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error')
     return {
       url: '',
@@ -143,7 +146,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
  */
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
   // 非法的日志信息
-  if (typeof options !== 'object' || options === null) {
+  if (getDataType(options) !== 'Object') {
     outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error')
     return {
       url: '',
@@ -195,7 +198,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
 
 function uploadLog(options: SentryCaptureOptions) {
   // 非法的日志信息
-  if (typeof options !== 'object' || options === null) {
+  if (getDataType(options) !== 'Object') {
     outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error');
     return;
   }
@@ -248,7 +251,7 @@ export function captureMessage(options: SentryCaptureOptions) {
   // 禁止上传日志
   if (!basicOptions.enabled) return
   // 非法地配置项对象参数
-  if (typeof options !== 'object' || options === null) {
+  if (getDataType(options) !== 'Object') {
     outputMsg('method "captureMessage" must pass a object variable, please check again!', 'error');
     return;
   }

@@ -1,8 +1,11 @@
 // 日志级别类型
 export type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
-// 日志基本参数类型
-export interface BasicOptionsState {
+// 必填配置项
+export interface RequiredOptions {
   dsn: string// Sentry日志服务的dsn
+}
+// 可选配置项
+export interface OptionalOptions {
   enabled: boolean// 是否上报数据到接口
   platform: string// 上报的SDK平台
   level: LogLevel// 日志级别，支持的值有fatal、error、warning、info、debug
@@ -10,6 +13,10 @@ export interface BasicOptionsState {
   environment: string// 环境，默认为生产环境
   envelope: boolean// 是否使用envelope相关接口
 }
+// SDK 基本参数类型
+export type BasicOptionsState = RequiredOptions & OptionalOptions
+// SDK 初始化配置项类型
+export type InitOptions = RequiredOptions & Partial<OptionalOptions>
 // 解析DSN完成后返回的对象
 export interface ApiOptions {
   uri: string// api地址
@@ -17,11 +24,11 @@ export interface ApiOptions {
   projectId: string// 项目id
 }
 // user 参数配置项
-export interface UserOption {
+export interface UserOptions {
   ip_address?: string
 }
 // sdk 参数配置项
-export interface SDKOption {
+export interface SDKOptions {
   name: string
   version: string
 }
@@ -30,7 +37,7 @@ export interface HttpHeader {
   [key: string]: string
 }
 // request 参数配置项
-export interface RequestOption {
+export interface RequestOptions {
   headers: HttpHeader
 }
 // store接口基本参数类型
@@ -39,9 +46,9 @@ export interface BasicApiOptions {
   level: string
   server_name: string
   environment: string
-  user: UserOption,
-  sdk: SDKOption,
-  request: RequestOption
+  user: UserOptions,
+  sdk: SDKOptions,
+  request: RequestOptions
 }
 // store接口基本参数类型
 export interface StoreApiOptions extends BasicApiOptions {
@@ -55,7 +62,7 @@ export interface EnvelopeApiOptions extends BasicApiOptions {
 // envelope接口数据的header对象类型
 export interface EnvelopePayloadHeaderOptions {
   sent_at: string
-  sdk: SDKOption
+  sdk: SDKOptions
 }
 // envelope接口数据的item对象类型
 export interface EnvelopePayloadItemOptions {
