@@ -28,7 +28,14 @@ const basicOptions: BasicOptionsState = {
   level: 'error',
   serverName: window.location.hostname,
   environment: 'production',
-  envelope: false
+  envelope: false,
+  request: {
+    method: 'GET',
+    url: window.location.href,
+    headers: {
+      'User-Agent': navigator.userAgent
+    }
+  }
 }
 // 初始化SDK
 export function init(options: InitOptions) {
@@ -73,13 +80,14 @@ function parseDSN(): ApiOptions {
   }
   const matches: string[] | null = dsnReg.exec(basicOptions.dsn)
   const nodes = matches ? matches.slice(1) : []
+  // const [protocol, publicKey, _ = '', host, port = '', projectId] = nodes
   const protocol = nodes[0]
   const publicKey = nodes[1]
   const host = nodes[3]
-  const port = nodes[4]
+  const port = nodes[4] || ''
   const projectId = nodes[5]
   return {
-    uri: protocol + '://' + host + (port ? ':' + port : '') + '/api/',
+    uri: `${protocol}://${host}${port}/api/`,
     publicKey: publicKey,
     projectId: projectId
   }
@@ -90,7 +98,7 @@ function parseDSN(): ApiOptions {
 function getAPIAddress(): string {
   const key: string = basicOptions.envelope ? 'envelope' : 'store'
   const basicRequestOptions: ApiOptions  = parseDSN()
-  const url = basicRequestOptions.uri + basicRequestOptions.projectId + '/' + key + '/?sentry_version=7&sentry_client='+ sdkName + sdkVersion +'&sentry_key=' + basicRequestOptions.publicKey
+  const url = `${basicRequestOptions.uri}${basicRequestOptions.projectId}/${key}/?sentry_version=7&sentry_client=${sdkName}${sdkVersion}&sentry_key=${basicRequestOptions.publicKey}`
   return url
 }
 /**
@@ -123,11 +131,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
       name: sdkName,
       version: sdkVersion
     },
-    request: {
-      headers: {
-        'User-Agent': navigator.userAgent
-      }
-    }
+    request: basicOptions.request
   }
   // 构造目标请求数据
   const payload = mergeObject(basicPayload, options) as StoreApiOptions
@@ -166,11 +170,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
       name: sdkName,
       version: sdkVersion
     },
-    request: {
-      headers: {
-        'User-Agent': navigator.userAgent
-      }
-    }
+    request: basicOptions.request
   }
   // 构造目标请求数据
   const targetPayload = mergeObject(basicPayload, options) as EnvelopeApiOptions
@@ -214,13 +214,11 @@ function uploadLog(options: SentryCaptureOptions) {
       headers: headers as HeadersInit | undefined,
       body: payload,// body data type must match "Content-Type" header
     })
-    .then(function(res) {
-      return res.json()
-    })
-    .then(function(res) {
+    .then(res => res.json())
+    .then(res => {
       console.log('fetch result => ', res)
     })
-    .catch(function(err) {
+    .catch(err => {
       console.log('fetch error => ', err)
     })
   } else {

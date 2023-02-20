@@ -13,8 +13,20 @@ export interface OptionalOptions {
   environment: string// 环境，默认为生产环境
   envelope: boolean// 是否使用envelope相关接口
 }
+// request 参数配置项，具体可见配置文档 => https://develop.sentry.dev/sdk/event-payloads/request/
+export interface RequestOptions {
+  headers?: HttpHeader
+  method?: string
+  url?: string
+  query_string?: string
+  data?: any
+  cookies?: string
+  env?: any
+}
 // SDK 基本参数类型
-export type BasicOptionsState = RequiredOptions & OptionalOptions
+export interface BasicOptionsState extends RequiredOptions , OptionalOptions {
+  request: RequestOptions
+}
 // SDK 初始化配置项类型
 export type InitOptions = RequiredOptions & Partial<OptionalOptions>
 // 解析DSN完成后返回的对象
@@ -23,11 +35,14 @@ export interface ApiOptions {
   publicKey: string// 公钥
   projectId: string// 项目id
 }
-// user 参数配置项
+// user 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/user/
 export interface UserOptions {
   ip_address?: string
+  id?: string | number
+  username?: string
+  email?: string
 }
-// sdk 参数配置项
+// sdk 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/sdk/
 export interface SDKOptions {
   name: string
   version: string
@@ -35,10 +50,6 @@ export interface SDKOptions {
 // http-header字段参数配置项
 export interface HttpHeader {
   [key: string]: string
-}
-// request 参数配置项
-export interface RequestOptions {
-  headers: HttpHeader
 }
 // store接口基本参数类型
 export interface BasicApiOptions {
