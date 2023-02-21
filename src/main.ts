@@ -8,11 +8,11 @@ import type {
   EnvelopeApiOptions,
   EnvelopePayloadHeaderOptions,
   EnvelopePayloadItemOptions,
-  SentryCaptureOptions
+  SentryCaptureOptions,
+  UserOptions
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
-import { mergeObject } from './utils/object'
 import { getDataType } from './utils/data-type'
 // Sentry DSN 正则
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
@@ -33,9 +33,48 @@ const basicOptions: BasicOptionsState = {
     method: 'GET',
     url: window.location.href,
     headers: {
-      'User-Agent': navigator.userAgent
+      'User-Agent': window.navigator.userAgent
     }
   }
+}
+// 初始化的 Sentry Scope User 基本配置项
+const initUserOptions: UserOptions = {
+  ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
+}
+// Sentry Scope User 基本配置项
+let userOptions: UserOptions = {
+  ...initUserOptions
+}
+/**
+ * @method 设置用户信息
+ * @document https://develop.sentry.dev/sdk/event-payloads/user/
+ */
+function setUser(user: UserOptions) {
+  userOptions = {
+    ...userOptions,
+    ...user
+  }
+}
+/**
+ * @method 清空所有Scope配置
+ */
+function clear() {
+  userOptions = {
+    ...initUserOptions
+  }
+}
+/**
+ * @method 使用全局的Scope
+ */
+export function withScope(callback: Function) {
+  if (typeof callback !== 'function') {
+    outputMsg('method "withScope" must pass a function variable, please check again!', 'error')
+    return
+  }
+  callback({
+    setUser,
+    clear
+  })
 }
 // 初始化SDK
 export function init(options: InitOptions) {
@@ -119,6 +158,8 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   }
+  // 解构需要独立处理的配置项
+  const { user = {}, request = {}, ...restOptions } = options
   // 构造基础数据
   const basicPayload: StoreApiOptions = {
     platform: basicOptions.platform,
@@ -126,19 +167,24 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     timestamp: new Date().toISOString(),
-    user: {},
+    user: {
+      ...userOptions,
+      ...user
+    },
     sdk: {
       name: sdkName,
       version: sdkVersion
     },
-    request: basicOptions.request
+    request: {
+      ...basicOptions.request,
+      ...request
+    }
   }
   // 构造目标请求数据
-  const payload = mergeObject(basicPayload, options) as StoreApiOptions
-  // 存在user配置项但是不存在user.ip_address配置子项
-  if (!payload.user.ip_address) {
-    payload.user.ip_address = '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-  }
+  const payload = {
+    ...basicPayload,
+    ...restOptions
+  } as StoreApiOptions
   return {
     url: getAPIAddress(),
     headers: headers,
@@ -147,6 +193,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
 }
 /**
  * @method 通过envelope接口请求配置
+ * @document https://develop.sentry.dev/sdk/envelopes/#serialization-format
  */
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
   // 非法的日志信息
@@ -158,32 +205,38 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
       payload: ''
     }
   }
+  // 解构需要独立处理的配置项
+  const { user = {}, request = {}, type = 'event', ...restOptions } = options
   const headers: HttpHeader = {}
   const basicPayload: EnvelopeApiOptions = {
     platform: basicOptions.platform,
     level: basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
-    type: 'event',
-    user: {},
+    type: type,
+    user: {
+      ...userOptions,
+      ...user
+    },
+    request: {
+      ...basicOptions.request,
+      ...request
+    }
+  }
+  // 构造目标请求数据
+  const targetPayload = {
+    ...basicPayload,
+    ...restOptions
+  } as EnvelopeApiOptions
+  const payloadHeaders: EnvelopePayloadHeaderOptions = {
+    sent_at: new Date().toISOString(),
     sdk: {
       name: sdkName,
       version: sdkVersion
-    },
-    request: basicOptions.request
-  }
-  // 构造目标请求数据
-  const targetPayload = mergeObject(basicPayload, options) as EnvelopeApiOptions
-  // 存在user配置项但是不存在user.ip_address配置子项
-  if (!targetPayload.user.ip_address) {
-    targetPayload.user.ip_address = '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
-  }
-  const payloadHeaders: EnvelopePayloadHeaderOptions = {
-    sent_at: new Date().toISOString(),
-    sdk: targetPayload.sdk
+    }
   }
   const payloadItem: EnvelopePayloadItemOptions = {
-    type: targetPayload.type
+    type: type
   }
   const payload: string = JSON.stringify(payloadHeaders) + '\n' + JSON.stringify(payloadItem) + '\n' + JSON.stringify(targetPayload) + '\n'
   return {
@@ -195,7 +248,6 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
 /**
  * @method 上传日志到日志服务器
  */
-
 function uploadLog(options: SentryCaptureOptions) {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {

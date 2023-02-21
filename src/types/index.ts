@@ -57,13 +57,13 @@ export interface BasicApiOptions {
   level: string
   server_name: string
   environment: string
-  user: UserOptions,
-  sdk: SDKOptions,
+  user: UserOptions
   request: RequestOptions
 }
 // store接口基本参数类型
 export interface StoreApiOptions extends BasicApiOptions {
   timestamp: string
+  sdk: SDKOptions
 }
 // envelope接口基本参数类型
 export interface EnvelopeApiOptions extends BasicApiOptions {
@@ -82,6 +82,7 @@ export interface EnvelopePayloadItemOptions {
 // Sentry SDK 配置项对象
 export interface SentryCaptureOptions extends BasicApiOptions {
   message: string
+  type?: string
 }
 // 日志上传的请求配置项目
 export interface UploadRequestOptions {
