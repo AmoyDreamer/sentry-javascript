@@ -126,11 +126,18 @@ function clearTagOptions() {
   tagOptions = {}
 }
 /**
+ * @method 清空之前的 Scope Extra 配置
+ */
+function clearExtraOptions() {
+  extraOptions = {}
+}
+/**
  * @method 清空所有Scope配置
  */
 function clear() {
   clearUserOptions()
   clearTagOptions()
+  clearExtraOptions()
 }
 /**
  * @method 使用全局的Scope
@@ -303,6 +310,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     level = basicOptions.level,
     server_name = basicOptions.serverName,
     environment = basicOptions.environment,
+    event_id = '',
     ...restOptions
   } = options
   const headers: HttpHeader = {}
@@ -336,7 +344,8 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     sdk: {
       name: sdkName,
       version: sdkVersion
-    }
+    },
+    event_id: event_id
   }
   const payloadItem: EnvelopePayloadItemOptions = {
     type: type

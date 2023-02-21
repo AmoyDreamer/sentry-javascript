@@ -68,7 +68,6 @@ export interface BasicApiOptions {
   request: RequestOptions
   tags?: TagOptions
   extra?: ExtraOptions
-  event_id?: string
 }
 // store接口基本参数类型
 export interface StoreApiOptions extends BasicApiOptions {
@@ -84,15 +83,17 @@ export interface EnvelopeApiOptions extends BasicApiOptions {
 export interface EnvelopePayloadHeaderOptions {
   sent_at: string
   sdk: SDKOptions
+  event_id?: string
 }
 // envelope接口数据的item对象类型
 export interface EnvelopePayloadItemOptions {
   type: string
 }
 // Sentry SDK 配置项对象
-export interface SentryCaptureOptions extends BasicApiOptions {
+export interface SentryCaptureOptions extends Partial<BasicApiOptions> {
   message: string
   type?: string
+  event_id?: string
 }
 // 日志上传的请求配置项目
 export interface UploadRequestOptions {
