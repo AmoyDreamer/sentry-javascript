@@ -79,6 +79,12 @@ function setTag(key: string, value: string) {
   tagOptions[key] = value
 }
 /**
+ * @method 移除自定义标签信息
+ */
+function removeTag(key: string) {
+  delete tagOptions[key]
+}
+/**
  * @method 清空之前的 Scope User 配置
  */
 function clearUserOptions() {
@@ -110,6 +116,7 @@ export function withScope(callback: Function) {
   callback({
     setUser,
     setTag,
+    removeTag,
     clear
   })
 }
