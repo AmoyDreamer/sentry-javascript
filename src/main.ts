@@ -10,7 +10,8 @@ import type {
   EnvelopePayloadItemOptions,
   SentryCaptureOptions,
   UserOptions,
-  TagOptions
+  TagOptions,
+  ExtraOptions
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
@@ -42,12 +43,14 @@ const basicOptions: BasicOptionsState = {
 const initUserOptions: UserOptions = {
   ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
 }
-// Sentry Scope User 基本配置项
+// Sentry Scope User 配置项
 let userOptions: UserOptions = {
   ...initUserOptions
 }
-// Sentry Scope Tags 基本配置项
+// Sentry Scope Tags 配置项
 let tagOptions: TagOptions = {}
+// Sentry Scope Extra 配置项
+let extraOptions: ExtraOptions = {}
 /**
  * @method 设置用户信息
  * @document https://develop.sentry.dev/sdk/event-payloads/user/
@@ -82,7 +85,31 @@ function setTag(key: string, value: string) {
  * @method 移除自定义标签信息
  */
 function removeTag(key: string) {
+  if (typeof key !== 'string') {
+    outputMsg('the parameter "key" of method "removeTag" must a string value, please check again!', 'error')
+    return
+  }
   delete tagOptions[key]
+}
+/**
+ * @method 设置自定义扩展信息
+ */
+function setExtra(key: string, value: any) {
+  if (typeof key !== 'string') {
+    outputMsg('the parameter "key" of method "setExtra" must a string value, please check again!', 'error')
+    return
+  }
+  extraOptions[key] = value
+}
+/**
+ * @method 移除自定义扩展信息
+ */
+function removeExtra(key: string) {
+  if (typeof key !== 'string') {
+    outputMsg('the parameter "key" of method "removeExtra" must a string value, please check again!', 'error')
+    return
+  }
+  delete extraOptions[key]
 }
 /**
  * @method 清空之前的 Scope User 配置
@@ -117,6 +144,8 @@ export function withScope(callback: Function) {
     setUser,
     setTag,
     removeTag,
+    setExtra,
+    removeExtra,
     clear
   })
 }
@@ -207,6 +236,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     user = {},
     request = {},
     tags = {},
+    extra = {},
     platform = basicOptions.platform,
     level = basicOptions.level,
     server_name = basicOptions.serverName,
@@ -236,6 +266,10 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
       ...tagOptions,
       ...tags
     },
+    extra: {
+      ...extraOptions,
+      ...extra
+    },
     ...restOptions
   }
   return {
@@ -263,6 +297,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     user = {},
     request = {},
     tags = {},
+    extra = {},
     type = 'event',
     platform = basicOptions.platform,
     level = basicOptions.level,
@@ -289,6 +324,10 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     tags: {
       ...tagOptions,
       ...tags
+    },
+    extra: {
+      ...extraOptions,
+      ...extra
     },
     ...restOptions
   }

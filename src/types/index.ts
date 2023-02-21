@@ -47,13 +47,16 @@ export interface SDKOptions {
   name: string
   version: string
 }
-// tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes
-export interface TagOptions {
+interface StringObject {
   [key: string]: string
 }
+// tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes
+export type TagOptions = StringObject
 // http-header字段参数配置项
-export interface HttpHeader {
-  [key: string]: string
+export type HttpHeader = StringObject
+// extra 参数配置项, 具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes
+export interface ExtraOptions {
+  [key: string]: any
 }
 // store接口基本参数类型
 export interface BasicApiOptions {
@@ -64,6 +67,8 @@ export interface BasicApiOptions {
   user: UserOptions
   request: RequestOptions
   tags?: TagOptions
+  extra?: ExtraOptions
+  event_id?: string
 }
 // store接口基本参数类型
 export interface StoreApiOptions extends BasicApiOptions {
