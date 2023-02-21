@@ -47,6 +47,10 @@ export interface SDKOptions {
   name: string
   version: string
 }
+// tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes
+export interface TagOptions {
+  [key: string]: string
+}
 // http-header字段参数配置项
 export interface HttpHeader {
   [key: string]: string
@@ -59,6 +63,7 @@ export interface BasicApiOptions {
   environment: string
   user: UserOptions
   request: RequestOptions
+  tags?: TagOptions
 }
 // store接口基本参数类型
 export interface StoreApiOptions extends BasicApiOptions {

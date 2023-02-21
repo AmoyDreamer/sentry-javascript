@@ -9,7 +9,8 @@ import type {
   EnvelopePayloadHeaderOptions,
   EnvelopePayloadItemOptions,
   SentryCaptureOptions,
-  UserOptions
+  UserOptions,
+  TagOptions
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
@@ -45,34 +46,70 @@ const initUserOptions: UserOptions = {
 let userOptions: UserOptions = {
   ...initUserOptions
 }
+// Sentry Scope Tags 基本配置项
+let tagOptions: TagOptions = {}
 /**
  * @method 设置用户信息
  * @document https://develop.sentry.dev/sdk/event-payloads/user/
  */
-function setUser(user: UserOptions) {
-  userOptions = {
-    ...userOptions,
-    ...user
+function setUser(options: UserOptions | null) {
+  if (typeof options !== 'object') {
+    outputMsg('method "setUser" must pass a object parameter, please check again!', 'error')
+    return
   }
+  if (options) {
+    userOptions = {
+      ...userOptions,
+      ...options
+    }
+  } else {
+    userOptions = {
+      ...initUserOptions
+    }
+  }
+}
+/**
+ * @method 设置自定义标签信息
+ */
+function setTag(key: string, value: string) {
+  if (typeof key !== 'string' || typeof value !== 'string') {
+    outputMsg('method "setTag" must pass two string parameter, please check again!', 'error')
+    return
+  }
+  tagOptions[key] = value
+}
+/**
+ * @method 清空之前的 Scope User 配置
+ */
+function clearUserOptions() {
+  userOptions = {
+    ...initUserOptions
+  }
+}
+/**
+ * @method 清空之前的 Scope Tags 配置
+ */
+function clearTagOptions() {
+  tagOptions = {}
 }
 /**
  * @method 清空所有Scope配置
  */
 function clear() {
-  userOptions = {
-    ...initUserOptions
-  }
+  clearUserOptions()
+  clearTagOptions()
 }
 /**
  * @method 使用全局的Scope
  */
 export function withScope(callback: Function) {
   if (typeof callback !== 'function') {
-    outputMsg('method "withScope" must pass a function variable, please check again!', 'error')
+    outputMsg('method "withScope" must pass a function, please check again!', 'error')
     return
   }
   callback({
     setUser,
+    setTag,
     clear
   })
 }
@@ -80,7 +117,7 @@ export function withScope(callback: Function) {
 export function init(options: InitOptions) {
   // 非法地配置项对象参数
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "init" must pass a object variable, please check again!', 'error')
+    outputMsg('method "init" must pass a object parameter, please check again!', 'error')
     return
   }
   // 非法的dsn参数
@@ -146,7 +183,7 @@ function getAPIAddress(): string {
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error')
+    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
     return {
       url: '',
       headers: {},
@@ -159,13 +196,22 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     'Content-Type': 'application/json'
   }
   // 解构需要独立处理的配置项
-  const { user = {}, request = {}, ...restOptions } = options
-  // 构造基础数据
-  const basicPayload: StoreApiOptions = {
-    platform: basicOptions.platform,
-    level: basicOptions.level,
-    server_name: basicOptions.serverName,
-    environment: basicOptions.environment,
+  const {
+    user = {},
+    request = {},
+    tags = {},
+    platform = basicOptions.platform,
+    level = basicOptions.level,
+    server_name = basicOptions.serverName,
+    environment = basicOptions.environment,
+    ...restOptions
+  } = options
+  // 构造目标请求数据
+  const payload: StoreApiOptions = {
+    platform: platform,
+    level: level,
+    server_name: server_name,
+    environment: environment,
     timestamp: new Date().toISOString(),
     user: {
       ...userOptions,
@@ -178,13 +224,13 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     request: {
       ...basicOptions.request,
       ...request
-    }
-  }
-  // 构造目标请求数据
-  const payload = {
-    ...basicPayload,
+    },
+    tags: {
+      ...tagOptions,
+      ...tags
+    },
     ...restOptions
-  } as StoreApiOptions
+  }
   return {
     url: getAPIAddress(),
     headers: headers,
@@ -198,7 +244,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error')
+    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
     return {
       url: '',
       headers: {},
@@ -206,13 +252,24 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     }
   }
   // 解构需要独立处理的配置项
-  const { user = {}, request = {}, type = 'event', ...restOptions } = options
+  const {
+    user = {},
+    request = {},
+    tags = {},
+    type = 'event',
+    platform = basicOptions.platform,
+    level = basicOptions.level,
+    server_name = basicOptions.serverName,
+    environment = basicOptions.environment,
+    ...restOptions
+  } = options
   const headers: HttpHeader = {}
-  const basicPayload: EnvelopeApiOptions = {
-    platform: basicOptions.platform,
-    level: basicOptions.level,
-    server_name: basicOptions.serverName,
-    environment: basicOptions.environment,
+  // 构造目标请求数据
+  const targetPayload: EnvelopeApiOptions = {
+    platform: platform,
+    level: level,
+    server_name: server_name,
+    environment: environment,
     type: type,
     user: {
       ...userOptions,
@@ -221,13 +278,13 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     request: {
       ...basicOptions.request,
       ...request
-    }
-  }
-  // 构造目标请求数据
-  const targetPayload = {
-    ...basicPayload,
+    },
+    tags: {
+      ...tagOptions,
+      ...tags
+    },
     ...restOptions
-  } as EnvelopeApiOptions
+  }
   const payloadHeaders: EnvelopePayloadHeaderOptions = {
     sent_at: new Date().toISOString(),
     sdk: {
@@ -251,7 +308,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
 function uploadLog(options: SentryCaptureOptions) {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object variable, please check again!', 'error');
+    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error');
     return;
   }
   const requestOptions: UploadRequestOptions  = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
@@ -302,7 +359,7 @@ export function captureMessage(options: SentryCaptureOptions) {
   if (!basicOptions.enabled) return
   // 非法地配置项对象参数
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "captureMessage" must pass a object variable, please check again!', 'error');
+    outputMsg('method "captureMessage" must pass a object parameter, please check again!', 'error');
     return;
   }
   // 非法信息数据
