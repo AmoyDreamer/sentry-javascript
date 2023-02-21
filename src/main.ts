@@ -363,8 +363,8 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
 function uploadLog(options: SentryCaptureOptions) {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error');
-    return;
+    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
+    return
   }
   const requestOptions: UploadRequestOptions  = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
   const url = requestOptions.url
@@ -375,7 +375,7 @@ function uploadLog(options: SentryCaptureOptions) {
     fetch(url, {
       method: 'POST',
       referrerPolicy: 'origin',
-      headers: headers as HeadersInit | undefined,
+      headers: headers as HeadersInit,
       body: payload,// body data type must match "Content-Type" header
     })
     .then(res => res.json())
@@ -388,13 +388,13 @@ function uploadLog(options: SentryCaptureOptions) {
   } else {
     // 不支持fetch，使用原生XMLHttpRequest对象
     let xhr = new XMLHttpRequest()
-    // xhr.onerror = reject;
+    // xhr.onerror = reject
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         // var res = JSON.parse(xhr.response)
         console.log(xhr)
       }
-    };
+    }
     xhr.open('POST', url)
     for (let key in headers) {
       if (Object.prototype.hasOwnProperty.call(headers, key)) {
@@ -409,19 +409,32 @@ function uploadLog(options: SentryCaptureOptions) {
  * @document basic options => https://develop.sentry.dev/sdk/event-payloads
  * @document message options => https://develop.sentry.dev/sdk/event-payloads/message/
  */
-export function captureMessage(options: SentryCaptureOptions) {
+export function captureMessage(message: string, options?: SentryCaptureOptions) {
   // 禁止上传日志
   if (!basicOptions.enabled) return
-  // 非法地配置项对象参数
-  if (getDataType(options) !== 'Object') {
-    outputMsg('method "captureMessage" must pass a object parameter, please check again!', 'error');
-    return;
-  }
   // 非法信息数据
-  if (typeof options.message !== 'string' || options.message === '') {
-    outputMsg('method "captureMessage" must pass the value of "message" on options params, please check again!', 'error');
-    return;
+  if (typeof message !== 'string' || message === '') {
+    outputMsg('method "captureMessage" must pass the value on parameter "message", please check again!', 'error')
+    return
   }
+  // 如果没有可选配置项，直接抛数据
+  if (typeof options === 'undefined') {
+    // 上传日志
+    uploadLog({
+      message: message
+    })
+    return
+  }
+  // 非法地配置项对象参数
+  if (typeof options !== 'object' || options === null) {
+    outputMsg('method "captureMessage" must pass a object parameter, please check again!', 'error')
+    return
+  }
+  // 存在可选配置项，则特殊处理message参数
+  const { message: msg = message, ...restOptions } = options
   // 上传日志
-  uploadLog(options)
+  uploadLog({
+    message: msg,
+    ...restOptions
+  })
 }

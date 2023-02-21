@@ -58,6 +58,11 @@ export type HttpHeader = StringObject
 export interface ExtraOptions {
   [key: string]: any
 }
+// message 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/message/
+export interface MessageOptions {
+  message?: string
+  params?: string[]
+}
 // store接口基本参数类型
 export interface BasicApiOptions {
   platform: string
@@ -91,7 +96,7 @@ export interface EnvelopePayloadItemOptions {
 }
 // Sentry SDK 配置项对象
 export interface SentryCaptureOptions extends Partial<BasicApiOptions> {
-  message: string
+  message: string | MessageOptions
   type?: string
   event_id?: string
 }
