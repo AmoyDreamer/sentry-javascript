@@ -63,6 +63,17 @@ export interface MessageOptions {
   message?: string
   params?: string[]
 }
+// exception values 参数配置项对象
+export interface ExceptionItem {
+  type: string
+  value: string
+  module?: string
+  stacktrace?: any
+}
+// exception 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/exception/
+export interface ExceptionOptions {
+  values: ExceptionItem[]
+}
 // store接口基本参数类型
 export interface BasicApiOptions {
   platform: string
@@ -96,9 +107,10 @@ export interface EnvelopePayloadItemOptions {
 }
 // Sentry SDK 配置项对象
 export interface SentryCaptureOptions extends Partial<BasicApiOptions> {
-  message: string | MessageOptions
+  message?: string | MessageOptions
   type?: string
   event_id?: string
+  exception?: ExceptionOptions
 }
 // 日志上传的请求配置项目
 export interface UploadRequestOptions {

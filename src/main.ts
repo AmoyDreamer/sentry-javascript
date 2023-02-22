@@ -11,7 +11,8 @@ import type {
   SentryCaptureOptions,
   UserOptions,
   TagOptions,
-  ExtraOptions
+  ExtraOptions,
+  ExceptionOptions
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
@@ -427,7 +428,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   }
   // 非法地配置项对象参数
   if (typeof options !== 'object' || options === null) {
-    outputMsg('method "captureMessage" must pass a object parameter, please check again!', 'error')
+    outputMsg('method "captureMessage" must pass a object value on parameter "options", please check again!', 'error')
     return
   }
   // 存在可选配置项，则特殊处理message参数
@@ -435,6 +436,47 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   // 上传日志
   uploadLog({
     message: msg,
+    ...restOptions
+  })
+}
+/**
+ * @method 捕获异常
+ */
+export function captureException(err: Error, options?: SentryCaptureOptions) {
+  // 禁止上传日志
+  if (!basicOptions.enabled) return
+  // 非法的err配置项
+  if (typeof err !== 'object' || !(err instanceof Error)) {
+    outputMsg('method "captureException" must pass a object parameter, please check again!', 'error')
+    return
+  }
+  const exceptionOption: ExceptionOptions = {
+    values: [{
+      type: err.name,
+      value: err.message
+    }]
+  }
+  // 如果没有可选配置项，直接抛数据
+  if (typeof options === 'undefined') {
+    // 上传日志
+    uploadLog({
+      exception: exceptionOption
+    })
+    return
+  }
+  // 非法地配置项对象参数
+  if (typeof options !== 'object' || options === null) {
+    outputMsg('method "captureException" must pass a object value on parameter "options", please check again!', 'error')
+    return
+  }
+  // 存在可选配置项，则特殊处理message参数
+  const { exception = {}, ...restOptions } = options
+  // 上传日志
+  uploadLog({
+    exception: {
+      ...exceptionOption,
+      ...exception
+    },
     ...restOptions
   })
 }
