@@ -63,12 +63,26 @@ export interface MessageOptions {
   message?: string
   params?: string[]
 }
+
+// statcktrace frames 参数配置项对象，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/stacktrace/#frame-attributes
+export interface StackTraceFrameItem {
+  in_app?: boolean
+  function: string
+  filename: string
+  lineno?: number
+  colno?: number
+  abs_path?: string
+}
+// statcktrace 参数配置项对象，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/stacktrace/#attributes
+export interface StackTraceOptions {
+  frames: StackTraceFrameItem[]
+}
 // exception values 参数配置项对象
 export interface ExceptionItem {
   type: string
   value: string
   module?: string
-  stacktrace?: any
+  stacktrace?: StackTraceOptions
 }
 // exception 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/exception/
 export interface ExceptionOptions {

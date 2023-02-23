@@ -12,11 +12,14 @@ import type {
   UserOptions,
   TagOptions,
   ExtraOptions,
-  ExceptionOptions
+  ExceptionOptions,
+  StackTraceFrameItem
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
 import { getDataType } from './utils/data-type'
+import ErrorStackParser from 'error-stack-parser'
+import type { StackFrame } from 'error-stack-parser'
 // Sentry DSN 正则
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
 // Sentry SDK 版本号
@@ -418,11 +421,16 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
     outputMsg('method "captureMessage" must pass the value on parameter "message", please check again!', 'error')
     return
   }
+  // 预设配置
+  const presetOptions: SentryCaptureOptions = {
+    level: 'info'
+  }
   // 如果没有可选配置项，直接抛数据
   if (typeof options === 'undefined') {
     // 上传日志
     uploadLog({
-      message: message
+      message: message,
+      ...presetOptions
     })
     return
   }
@@ -436,6 +444,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   // 上传日志
   uploadLog({
     message: msg,
+    ...presetOptions,
     ...restOptions
   })
 }
@@ -450,10 +459,27 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
     outputMsg('method "captureException" must pass a object parameter, please check again!', 'error')
     return
   }
+  // 解析获取堆栈
+  const stackFrame: StackFrame[] = ErrorStackParser.parse(err)
+  let frames: StackTraceFrameItem[] = []
+  // 存在有堆栈的场景下格式化堆栈信息
+  if (stackFrame.length > 0) {
+    frames = (stackFrame || []).map((item: StackFrame) => ({
+      function: item.functionName || '',
+      filename: item.fileName || '',
+      abs_path: item.fileName,
+      lineno: item.lineNumber,
+      colno: item.columnNumber,
+      in_app: true
+    }))
+  }
   const exceptionOption: ExceptionOptions = {
     values: [{
       type: err.name,
-      value: err.message
+      value: err.message,
+      stacktrace: {
+        frames
+      }
     }]
   }
   // 如果没有可选配置项，直接抛数据
