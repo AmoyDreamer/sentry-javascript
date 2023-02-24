@@ -1,5 +1,5 @@
 import type {
-  BasicOptionsState,
+  BasicOptions,
   InitOptions,
   ApiOptions,
   StoreApiOptions,
@@ -13,7 +13,9 @@ import type {
   TagOptions,
   ExtraOptions,
   ExceptionOptions,
-  StackTraceFrameItem
+  StackTraceFrameItem,
+  RequestOptions,
+  SentryAPIResponse
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
@@ -27,21 +29,14 @@ const sdkVersion = '1.0.0'
 // Sentry SDK 名称
 const sdkName = 'sentry.javascript.browser'
 // Sentry SDK 基本配置项
-const basicOptions: BasicOptionsState = {
+const basicOptions: BasicOptions = {
   dsn: '',
   enabled: true,
   platform: 'javascript',
   level: 'error',
   serverName: window.location.hostname,
   environment: 'production',
-  envelope: false,
-  request: {
-    method: 'GET',
-    url: window.location.href,
-    headers: {
-      'User-Agent': window.navigator.userAgent
-    }
-  }
+  envelope: false
 }
 // 初始化的 Sentry Scope User 基本配置项
 const initUserOptions: UserOptions = {
@@ -55,6 +50,19 @@ let userOptions: UserOptions = {
 let tagOptions: TagOptions = {}
 // Sentry Scope Extra 配置项
 let extraOptions: ExtraOptions = {}
+/**
+ * @method 获取request options
+ */
+function getRequestOptions(): RequestOptions {
+  return {
+    method: 'GET',
+    url: window.location.href,
+    headers: {
+      Referer: window.document.referrer,
+      'User-Agent': window.navigator.userAgent
+    }
+  }
+}
 /**
  * @method 设置用户信息
  * @document https://develop.sentry.dev/sdk/event-payloads/user/
@@ -270,7 +278,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
       version: sdkVersion
     },
     request: {
-      ...basicOptions.request,
+      ...getRequestOptions(),
       ...request
     },
     tags: {
@@ -330,7 +338,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
       ...user
     },
     request: {
-      ...basicOptions.request,
+      ...getRequestOptions(),
       ...request
     },
     tags: {
@@ -349,7 +357,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
       name: sdkName,
       version: sdkVersion
     },
-    event_id: event_id
+    ...(event_id && {event_id: event_id})
   }
   const payloadItem: EnvelopePayloadItemOptions = {
     type: type
@@ -364,7 +372,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
 /**
  * @method 上传日志到日志服务器
  */
-function uploadLog(options: SentryCaptureOptions) {
+async function uploadLog(options: SentryCaptureOptions) {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
     outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
@@ -376,36 +384,40 @@ function uploadLog(options: SentryCaptureOptions) {
   const payload = requestOptions.payload
   // 支持fecth请求
   if (isSupportedFetch()) {
-    fetch(url, {
+    return await fetch(url, {
       method: 'POST',
       referrerPolicy: 'origin',
       headers: headers as HeadersInit,
       body: payload,// body data type must match "Content-Type" header
     })
     .then(res => res.json())
-    .then(res => {
-      console.log('fetch result => ', res)
-    })
-    .catch(err => {
-      console.log('fetch error => ', err)
-    })
+    .then(res => res)
+    .catch(_ => ({
+      id: ''
+    }))
   } else {
     // 不支持fetch，使用原生XMLHttpRequest对象
-    let xhr = new XMLHttpRequest()
-    // xhr.onerror = reject
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        // var res = JSON.parse(xhr.response)
-        console.log(xhr)
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest()
+      xhr.onerror = (_) => {
+        resolve({
+          id: ''
+        })
       }
-    }
-    xhr.open('POST', url)
-    for (let key in headers) {
-      if (Object.prototype.hasOwnProperty.call(headers, key)) {
-        xhr.setRequestHeader(key, headers[key])
+      xhr.onload = function () {
+        if (xhr.readyState === 4 && xhr.status === 200 && xhr.response) {
+          const res = JSON.parse(xhr.response)
+          resolve(res)
+        }
       }
-    }
-    xhr.send(payload)
+      xhr.open('POST', url)
+      for (const key in headers) {
+        if (Object.prototype.hasOwnProperty.call(headers, key)) {
+          xhr.setRequestHeader(key, headers[key])
+        }
+      }
+      xhr.send(payload)
+    })
   }
 }
 /**
@@ -428,11 +440,10 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   // 如果没有可选配置项，直接抛数据
   if (typeof options === 'undefined') {
     // 上传日志
-    uploadLog({
+    return uploadLog({
       message: message,
       ...presetOptions
     })
-    return
   }
   // 非法地配置项对象参数
   if (typeof options !== 'object' || options === null) {
@@ -442,7 +453,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   // 存在可选配置项，则特殊处理message参数
   const { message: msg = message, ...restOptions } = options
   // 上传日志
-  uploadLog({
+  return uploadLog({
     message: msg,
     ...presetOptions,
     ...restOptions
@@ -460,11 +471,11 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
     return
   }
   // 解析获取堆栈
-  const stackFrame: StackFrame[] = ErrorStackParser.parse(err)
+  const stackFrames: StackFrame[] = ErrorStackParser.parse(err)
   let frames: StackTraceFrameItem[] = []
   // 存在有堆栈的场景下格式化堆栈信息
-  if (stackFrame.length > 0) {
-    frames = (stackFrame || []).map((item: StackFrame) => ({
+  if (stackFrames.length > 0) {
+    frames = (stackFrames || []).map((item: StackFrame) => ({
       function: item.functionName || '',
       filename: item.fileName || '',
       abs_path: item.fileName,
@@ -498,11 +509,21 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   // 存在可选配置项，则特殊处理message参数
   const { exception = {}, ...restOptions } = options
   // 上传日志
-  uploadLog({
+  return uploadLog({
     exception: {
       ...exceptionOption,
       ...exception
     },
     ...restOptions
   })
+}
+export type {
+  InitOptions,
+  SentryCaptureOptions,
+  UserOptions,
+  TagOptions,
+  ExtraOptions,
+  ExceptionOptions,
+  RequestOptions,
+  SentryAPIResponse
 }

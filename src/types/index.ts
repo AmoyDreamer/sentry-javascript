@@ -1,5 +1,12 @@
 // 日志级别类型
 export type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
+// 字符串对象
+interface StringValueObject {
+  [key: string]: string
+}
+interface AnyValueObject {
+  [key: string]: any
+}
 // 必填配置项
 export interface RequiredOptions {
   dsn: string// Sentry日志服务的dsn
@@ -19,14 +26,12 @@ export interface RequestOptions {
   method?: string
   url?: string
   query_string?: string
-  data?: any
+  data?: AnyValueObject
   cookies?: string
-  env?: any
+  env?: AnyValueObject
 }
 // SDK 基本参数类型
-export interface BasicOptionsState extends RequiredOptions , OptionalOptions {
-  request: RequestOptions
-}
+export type BasicOptions = RequiredOptions & OptionalOptions
 // SDK 初始化配置项类型
 export type InitOptions = RequiredOptions & Partial<OptionalOptions>
 // 解析DSN完成后返回的对象
@@ -47,13 +52,10 @@ export interface SDKOptions {
   name: string
   version: string
 }
-interface StringObject {
-  [key: string]: string
-}
 // tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes
-export type TagOptions = StringObject
+export type TagOptions = StringValueObject
 // http-header字段参数配置项
-export type HttpHeader = StringObject
+export type HttpHeader = StringValueObject
 // extra 参数配置项, 具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes
 export interface ExtraOptions {
   [key: string]: any
@@ -131,4 +133,8 @@ export interface UploadRequestOptions {
   url: string
   headers: HttpHeader
   payload: string
+}
+// Sentry相关API接口回调对象
+export interface SentryAPIResponse {
+  id: string
 }
