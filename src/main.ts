@@ -37,7 +37,7 @@ const basicOptions: BasicOptions = {
   level: 'error',
   serverName: window.location.hostname,
   environment: 'production',
-  envelope: false
+  envelope: true
 }
 // 初始化的 Sentry Scope User 基本配置项
 const initUserOptions: UserOptions = {
