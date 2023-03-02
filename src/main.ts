@@ -20,6 +20,7 @@ import type {
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
 import { getDataType } from './utils/data-type'
+import { isOversized, limitSize, getDataSizeString } from './utils/size'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
 // Sentry DSN 正则
@@ -69,7 +70,7 @@ function getRequestOptions(): RequestOptions {
  */
 function setUser(options: UserOptions | null) {
   if (typeof options !== 'object') {
-    outputMsg('method "setUser" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "setUser" must pass a object parameter, please check again!', 'error')
     return
   }
   if (options) {
@@ -88,7 +89,7 @@ function setUser(options: UserOptions | null) {
  */
 function setTag(key: string, value: string) {
   if (typeof key !== 'string' || typeof value !== 'string') {
-    outputMsg('method "setTag" must pass two string parameter, please check again!', 'error')
+    outputMsg('Method "setTag" must pass two string parameter, please check again!', 'error')
     return
   }
   tagOptions[key] = value
@@ -98,7 +99,7 @@ function setTag(key: string, value: string) {
  */
 function removeTag(key: string) {
   if (typeof key !== 'string') {
-    outputMsg('the parameter "key" of method "removeTag" must a string value, please check again!', 'error')
+    outputMsg('The parameter "key" of method "removeTag" must a string value, please check again!', 'error')
     return
   }
   delete tagOptions[key]
@@ -108,7 +109,7 @@ function removeTag(key: string) {
  */
 function setExtra(key: string, value: any) {
   if (typeof key !== 'string') {
-    outputMsg('the parameter "key" of method "setExtra" must a string value, please check again!', 'error')
+    outputMsg('The parameter "key" of method "setExtra" must a string value, please check again!', 'error')
     return
   }
   extraOptions[key] = value
@@ -118,7 +119,7 @@ function setExtra(key: string, value: any) {
  */
 function removeExtra(key: string) {
   if (typeof key !== 'string') {
-    outputMsg('the parameter "key" of method "removeExtra" must a string value, please check again!', 'error')
+    outputMsg('The parameter "key" of method "removeExtra" must a string value, please check again!', 'error')
     return
   }
   delete extraOptions[key]
@@ -156,7 +157,7 @@ function clear() {
  */
 export function withScope(callback: Function) {
   if (typeof callback !== 'function') {
-    outputMsg('method "withScope" must pass a function, please check again!', 'error')
+    outputMsg('Method "withScope" must pass a function, please check again!', 'error')
     return
   }
   callback({
@@ -172,12 +173,12 @@ export function withScope(callback: Function) {
 export function init(options: InitOptions) {
   // 非法地配置项对象参数
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "init" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "init" must pass a object parameter, please check again!', 'error')
     return
   }
   // 非法的dsn参数
-  if (getDataType(options.dsn) !== 'String') {
-    outputMsg('method "init" must pass the value of "dsn" on options params, please check again!', 'error')
+  if (typeof options.dsn !== 'string') {
+    outputMsg('Method "init" must pass the value of "dsn" on options params, please check again!', 'error')
     return
   }
   // 非法的dsn格式
@@ -202,7 +203,7 @@ export function init(options: InitOptions) {
 function parseDSN(): ApiOptions {
   // 非法的dns
   if (!basicOptions.dsn) {
-    outputMsg('please check if the "init" method was called!', 'error')
+    outputMsg('Please check if the "init" method was called!', 'error')
     return {
       uri: '',
       publicKey: '',
@@ -238,7 +239,7 @@ function getAPIAddress(): string {
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "getStoreOptions" must pass a object parameter, please check again!', 'error')
     return {
       url: '',
       headers: {},
@@ -304,7 +305,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
   // 非法的日志信息
   if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "getEnvelopeOptions" must pass a object parameter, please check again!', 'error')
     return {
       url: '',
       headers: {},
@@ -373,18 +374,17 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
  * @method 上传日志到日志服务器
  */
 async function uploadLog(options: SentryCaptureOptions) {
-  // 非法的日志信息
-  if (getDataType(options) !== 'Object') {
-    outputMsg('method "uploadLog" must pass a object parameter, please check again!', 'error')
-    return
-  }
   const requestOptions: UploadRequestOptions  = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
   const url = requestOptions.url
   const headers: HttpHeader = requestOptions.headers
   const payload = requestOptions.payload
+  // 上传的日志内容超出限制大小
+  if (isOversized(payload)) {
+    return Promise.reject(`The current size of the log to be uploaded has exceeded the ${getDataSizeString(limitSize)} limit`)
+  }
   // 支持fecth请求
   if (isSupportedFetch()) {
-    return await fetch(url, {
+    return fetch(url, {
       method: 'POST',
       referrerPolicy: 'origin',
       headers: headers as HeadersInit,
@@ -430,7 +430,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   if (!basicOptions.enabled) return
   // 非法信息数据
   if (typeof message !== 'string' || message === '') {
-    outputMsg('method "captureMessage" must pass the value on parameter "message", please check again!', 'error')
+    outputMsg('Method "captureMessage" must pass the value on parameter "message", please check again!', 'error')
     return
   }
   // 预设配置
@@ -447,7 +447,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   }
   // 非法地配置项对象参数
   if (typeof options !== 'object' || options === null) {
-    outputMsg('method "captureMessage" must pass a object value on parameter "options", please check again!', 'error')
+    outputMsg('Method "captureMessage" must pass a object value on parameter "options", please check again!', 'error')
     return
   }
   // 存在可选配置项，则特殊处理message参数
@@ -467,7 +467,7 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   if (!basicOptions.enabled) return
   // 非法的err配置项
   if (typeof err !== 'object' || !(err instanceof Error)) {
-    outputMsg('method "captureException" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "captureException" must pass a stantard instance of Error class, please check again!', 'error')
     return
   }
   // 解析获取堆栈
@@ -496,14 +496,13 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   // 如果没有可选配置项，直接抛数据
   if (typeof options === 'undefined') {
     // 上传日志
-    uploadLog({
+    return uploadLog({
       exception: exceptionOption
     })
-    return
   }
   // 非法地配置项对象参数
   if (typeof options !== 'object' || options === null) {
-    outputMsg('method "captureException" must pass a object value on parameter "options", please check again!', 'error')
+    outputMsg('Method "captureException" must pass a object value on parameter "options", please check again!', 'error')
     return
   }
   // 存在可选配置项，则特殊处理message参数
