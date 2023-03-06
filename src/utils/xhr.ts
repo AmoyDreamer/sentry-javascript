@@ -6,6 +6,8 @@ import {
   RETRY_DELAY
 } from '../constants'
 import type { RequestExternalOptions, HttpHeader } from '../types'
+/** 允许的请求方式集合 */
+const enableMethods = ['GET', 'POST', 'PUT', 'OPTIONS', 'DELETE'] as const
 /** xhrWithRetry 请求配置项对象 */
 interface Options {
   /** http请求头对象 */
@@ -13,10 +15,8 @@ interface Options {
   /** http请求体内容 */
   body?: XMLHttpRequestBodyInit
   /** http请求方法 */
-  method?: 'GET' | 'POST' | 'PUT' | 'OPTIONS' | 'DELETE'
+  method?: typeof enableMethods[number]
 }
-/** 允许的请求方式集合 */
-const enableMethods = ['GET', 'POST', 'PUT', 'OPTIONS', 'DELETE']
 /**
  * @method 支持retry的XMLHttpRequest
  */
