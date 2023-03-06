@@ -23,13 +23,13 @@ import { getDataType } from './utils/data-type'
 import { isOversized, limitSize, getDataSizeString } from './utils/size'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
-// Sentry DSN 正则
+/** Sentry DSN 正则 */
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
-// Sentry SDK 版本号
+/** Sentry SDK 版本号 */
 const sdkVersion = '1.0.0'
-// Sentry SDK 名称
+/** Sentry SDK 名称 */
 const sdkName = 'sentry.javascript.browser'
-// Sentry SDK 基本配置项
+/** Sentry SDK 基本配置项 */
 const basicOptions: BasicOptions = {
   dsn: '',
   enabled: true,
@@ -39,17 +39,17 @@ const basicOptions: BasicOptions = {
   environment: 'production',
   envelope: true
 }
-// 初始化的 Sentry Scope User 基本配置项
+/** 初始化的 Sentry Scope User 基本配置项 */
 const initUserOptions: UserOptions = {
   ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
 }
-// Sentry Scope User 配置项
+/** Sentry Scope User 配置项 */
 let userOptions: UserOptions = {
   ...initUserOptions
 }
-// Sentry Scope Tags 配置项
+/** Sentry Scope Tags 配置项 */
 let tagOptions: TagOptions = {}
-// Sentry Scope Extra 配置项
+/** Sentry Scope Extra 配置项 */
 let extraOptions: ExtraOptions = {}
 /**
  * @method 获取request options
@@ -169,7 +169,9 @@ export function withScope(callback: Function) {
     clear
   })
 }
-// 初始化SDK
+/**
+ * @method 初始化SDK
+ */
 export function init(options: InitOptions) {
   // 非法地配置项对象参数
   if (getDataType(options) !== 'Object') {
@@ -478,7 +480,7 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
     frames = (stackFrames || []).map((item: StackFrame) => ({
       function: item.functionName || '',
       filename: item.fileName || '',
-      abs_path: item.fileName,
+      abs_path: item.fileName || '',
       lineno: item.lineNumber,
       colno: item.columnNumber,
       in_app: true
