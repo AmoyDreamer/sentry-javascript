@@ -149,3 +149,10 @@ export interface UploadRequestOptions {
 export interface SentryAPIResponse {
   id: string
 }
+/** Http请求扩展配置*/
+export interface RequestExternalOptions {
+  /** 最大重试请求次数 */
+  maxRetries?: number
+  /** 重试请求延迟时间 */
+  retryDelay?: number
+}

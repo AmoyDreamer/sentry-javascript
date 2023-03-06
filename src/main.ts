@@ -18,9 +18,9 @@ import type {
   SentryAPIResponse
 } from './types/index'
 import { outputMsg } from './utils/console'
-import { isSupportedFetch } from './utils/env'
 import { isObject } from './utils/type'
 import { isOversized, limitSize, getDataSizeString } from './utils/size'
+import { request } from './utils/request'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
 /** Sentry DSN 正则 */
@@ -384,43 +384,17 @@ async function uploadLog(options: SentryCaptureOptions) {
   if (isOversized(payload)) {
     return Promise.reject(`The current size of the log to be uploaded has exceeded the ${getDataSizeString(limitSize)} limit`)
   }
-  // 支持fecth请求
-  if (isSupportedFetch()) {
-    return fetch(url, {
-      method: 'POST',
-      referrerPolicy: 'origin',
-      headers: headers as HeadersInit,
-      body: payload,// body data type must match "Content-Type" header
-    })
-    .then(res => res.json())
-    .then(res => res)
-    .catch(_ => ({
-      id: ''
-    }))
-  } else {
-    // 不支持fetch，使用原生XMLHttpRequest对象
-    return new Promise((resolve) => {
-      const xhr = new XMLHttpRequest()
-      xhr.onerror = (_) => {
-        resolve({
-          id: ''
-        })
-      }
-      xhr.onload = function () {
-        if (xhr.readyState === 4 && xhr.status === 200 && xhr.response) {
-          const res = JSON.parse(xhr.response)
-          resolve(res)
-        }
-      }
-      xhr.open('POST', url)
-      for (const key in headers) {
-        if (Object.prototype.hasOwnProperty.call(headers, key)) {
-          xhr.setRequestHeader(key, headers[key])
-        }
-      }
-      xhr.send(payload)
-    })
+  // 默认返回值
+  const defaultResponse: Readonly<SentryAPIResponse> = {
+    id: ''
   }
+  // 发送相关数据到服务器
+  return request(url, {
+    method: 'POST',
+    headers: headers,
+    body: payload
+  })
+  .catch(() => defaultResponse)
 }
 /**
  * @method 捕获信息
