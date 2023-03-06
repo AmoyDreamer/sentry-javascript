@@ -19,7 +19,7 @@ import type {
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isSupportedFetch } from './utils/env'
-import { getDataType } from './utils/data-type'
+import { isObject } from './utils/type'
 import { isOversized, limitSize, getDataSizeString } from './utils/size'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
@@ -174,7 +174,7 @@ export function withScope(callback: Function) {
  */
 export function init(options: InitOptions) {
   // 非法地配置项对象参数
-  if (getDataType(options) !== 'Object') {
+  if (!isObject(options)) {
     outputMsg('Method "init" must pass a object parameter, please check again!', 'error')
     return
   }
@@ -240,7 +240,7 @@ function getAPIAddress(): string {
  */
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 非法的日志信息
-  if (getDataType(options) !== 'Object') {
+  if (!isObject(options)) {
     outputMsg('Method "getStoreOptions" must pass a object parameter, please check again!', 'error')
     return {
       url: '',
@@ -306,7 +306,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
  */
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
   // 非法的日志信息
-  if (getDataType(options) !== 'Object') {
+  if (!isObject(options)) {
     outputMsg('Method "getEnvelopeOptions" must pass a object parameter, please check again!', 'error')
     return {
       url: '',
@@ -448,7 +448,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
     })
   }
   // 非法地配置项对象参数
-  if (typeof options !== 'object' || options === null) {
+  if (!isObject(options)) {
     outputMsg('Method "captureMessage" must pass a object value on parameter "options", please check again!', 'error')
     return
   }
@@ -503,7 +503,7 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
     })
   }
   // 非法地配置项对象参数
-  if (typeof options !== 'object' || options === null) {
+  if (!isObject(options)) {
     outputMsg('Method "captureException" must pass a object value on parameter "options", please check again!', 'error')
     return
   }
