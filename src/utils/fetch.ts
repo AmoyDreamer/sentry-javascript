@@ -31,7 +31,7 @@ export async function fetchWithRetry(url: string, options = {}, externalOptions:
     if (retryCount <= maxRetries) {
       return new Promise(resolve => {
         setTimeout(() => {
-          console.log(`Retrying ${url}... (attempt ${retryCount} of ${maxRetries})`)
+          // console.log(`Retrying ${url}... (attempt ${retryCount} of ${maxRetries})`)
           resolve(fetchPromise())
         }, retryDelay)
       })

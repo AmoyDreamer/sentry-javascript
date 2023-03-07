@@ -4,20 +4,21 @@
   "description": "A generic Javascript SDK based on Self-Hosted Sentry.",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.esm.js",
+  "module": "./dist/es/index.js",
   "unpkg": "./dist/index.js",
   "jsdelivr": "./dist/index.js",
   "exports": {
     ".": {
       "import": {
-        "default": "./dist/index.esm.js"
+        "default": "./dist/es/index.js"
       },
-      "require": "./dist/index.common.js"
+      "require": "./dist/lib/index.js"
     }
   },
+  "types": "./dist/es/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "rollup -c --watch --NODE_ENV=dev",
+    "watch": "rollup -c --watch",
     "build": "cross-env NODE_ENV=production rollup -c",
     "prepare": "husky install"
   },
@@ -47,6 +48,7 @@
     "cross-env": "^7.0.3",
     "husky": "^8.0.3",
     "rollup": "^3.14.0",
+    "rollup-plugin-dts": "^5.2.0",
     "tslib": "^2.5.0",
     "typescript": "^4.9.5"
   },

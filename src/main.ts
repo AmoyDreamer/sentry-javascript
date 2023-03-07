@@ -14,8 +14,7 @@ import type {
   ExtraOptions,
   ExceptionOptions,
   StackTraceFrameItem,
-  RequestOptions,
-  SentrySDKResponse
+  RequestOptions
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isObject } from './utils/type'
@@ -489,14 +488,4 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
     },
     ...restOptions
   })
-}
-export type {
-  InitOptions,
-  SentryCaptureOptions,
-  UserOptions,
-  TagOptions,
-  ExtraOptions,
-  ExceptionOptions,
-  RequestOptions,
-  SentrySDKResponse
 }

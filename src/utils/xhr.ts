@@ -61,7 +61,7 @@ export async function xhrWithRetry(url: string, options: Options = {}, externalO
     if (retryCount <= maxRetries) {
       return new Promise(resolve => {
         setTimeout(() => {
-          console.log(`Retrying ${url}... (attempt ${retryCount} of ${maxRetries})`)
+          // console.log(`Retrying ${url}... (attempt ${retryCount} of ${maxRetries})`)
           resolve(xhrPromise())
         }, retryDelay)
       })

@@ -3,25 +3,33 @@ import babel, { getBabelOutputPlugin } from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import terser from '@rollup/plugin-terser'
+import dts from 'rollup-plugin-dts'
 import path from 'path'
 import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const production = process.env.NODE_ENV === 'production'
 
-const config = {
+export default [{
   input: './src/main.ts',
   output: [
     {
       file: './dist/index.js',
       format: 'iife',
-      name: 'Sentry'
+      name: 'Sentry',
+      plugins: [production && terser({
+        compress: {
+          drop_console: true,
+          drop_debugger: true
+        }
+      })]
     },
     {
-      file: './dist/index.common.js',
+      file: './dist/lib/index.js',
       format: 'cjs'
     },
     {
-      file: './dist/index.esm.js',
+      file: './dist/es/index.js',
       format: 'esm'
     }
   ],
@@ -34,15 +42,13 @@ const config = {
     }),
     nodeResolve()
   ]
-}
-
-if (process.env.NODE_ENV === 'production') {
-    config.plugins.push(terser({
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }))
-}
-
-export default config
+}, {
+  input: './src/index.d.ts',
+  output: [{
+    file: './dist/es/index.d.ts',
+    format: 'es'
+  }],
+  plugins: [
+    dts()
+  ]
+}]
