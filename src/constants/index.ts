@@ -1,7 +1,13 @@
 /** http状态码 - 成功 */
 export const HTTP_STATUS_SUCCESS = 200
+/** http状态码 - Bad Request */
+export const HTTP_STATUS_BAD_REQUEST = 400
 /** http状态码 - 并发请求太多，禁止请求 */
 export const HTTP_STATUS_TOO_MANY_REQUESTS = 429
+/** http状态码 - Internal Server Error */
+export const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500
+/** 禁止重新请求的http状态码集合 */
+export const DISABLE_RETRY_HTTP_STATUS_LIST = [HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_TOO_MANY_REQUESTS]
 /** http请求 - 最大重试次数 */
 export const MAX_RETRIES = 1
 /** http请求 - 延迟重试请求时间（单位：毫秒） */

@@ -15,12 +15,13 @@ import type {
   ExceptionOptions,
   StackTraceFrameItem,
   RequestOptions,
-  SentryAPIResponse
+  SentrySDKResponse
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isObject } from './utils/type'
 import { isOversized, limitSize, getDataSizeString } from './utils/size'
 import { request } from './utils/request'
+import { parseResponse, parseError } from './utils/response'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
 /** Sentry DSN 正则 */
@@ -384,17 +385,14 @@ async function uploadLog(options: SentryCaptureOptions) {
   if (isOversized(payload)) {
     return Promise.reject(`The current size of the log to be uploaded has exceeded the ${getDataSizeString(limitSize)} limit`)
   }
-  // 默认返回值
-  const defaultResponse: Readonly<SentryAPIResponse> = {
-    id: ''
-  }
   // 发送相关数据到服务器
   return request(url, {
     method: 'POST',
     headers: headers,
     body: payload
   })
-  .catch(() => defaultResponse)
+  .then(parseResponse)
+  .catch(parseError)
 }
 /**
  * @method 捕获信息
@@ -406,7 +404,7 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
   if (!basicOptions.enabled) return
   // 非法信息数据
   if (typeof message !== 'string' || message === '') {
-    outputMsg('Method "captureMessage" must pass the value on parameter "message", please check again!', 'error')
+    outputMsg('Method "captureMessage" must pass a valid string value on parameter "message", please check again!', 'error')
     return
   }
   // 预设配置
@@ -443,7 +441,7 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   if (!basicOptions.enabled) return
   // 非法的err配置项
   if (typeof err !== 'object' || !(err instanceof Error)) {
-    outputMsg('Method "captureException" must pass a stantard instance of Error class, please check again!', 'error')
+    outputMsg('Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!', 'error')
     return
   }
   // 解析获取堆栈
@@ -500,5 +498,5 @@ export type {
   ExtraOptions,
   ExceptionOptions,
   RequestOptions,
-  SentryAPIResponse
+  SentrySDKResponse
 }

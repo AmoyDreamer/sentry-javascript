@@ -1,7 +1,7 @@
 /** 日志级别类型 */
 type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
 /** 字符串对象 */
-interface StringValueObject {
+export interface StringValueObject {
   [key: string]: string
 }
 /** 任意类型对象 */
@@ -146,8 +146,17 @@ export interface UploadRequestOptions {
   payload: string
 }
 /** Sentry相关API接口回调对象 */
-export interface SentryAPIResponse {
+interface SentryAPIResponse {
   id: string
+}
+/** SDK默认返回的信封 */
+export interface SentrySDKResponse {
+  /** 错误码 */
+  code: number
+  /** 传送的数据 */
+  data: SentryAPIResponse | null
+  /** 提示信息 */
+  message: string
 }
 /** Http请求扩展配置*/
 export interface RequestExternalOptions {
@@ -155,4 +164,8 @@ export interface RequestExternalOptions {
   maxRetries?: number
   /** 重试请求延迟时间 */
   retryDelay?: number
+}
+/** 自定义的Http响应错误对象 */
+export interface CustomResponseError extends Error {
+  status?: number
 }
