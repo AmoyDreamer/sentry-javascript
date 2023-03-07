@@ -100,7 +100,7 @@ function setTag(key: string, value: string) {
  */
 function removeTag(key: string) {
   if (typeof key !== 'string') {
-    outputMsg('The parameter "key" of method "removeTag" must a string value, please check again!', 'error')
+    outputMsg('The parameter "key" of method "removeTag" must pass a string value, please check again!', 'error')
     return
   }
   delete tagOptions[key]
@@ -110,7 +110,7 @@ function removeTag(key: string) {
  */
 function setExtra(key: string, value: any) {
   if (typeof key !== 'string') {
-    outputMsg('The parameter "key" of method "setExtra" must a string value, please check again!', 'error')
+    outputMsg('The parameter "key" of method "setExtra" must pass a string value, please check again!', 'error')
     return
   }
   extraOptions[key] = value
@@ -120,7 +120,7 @@ function setExtra(key: string, value: any) {
  */
 function removeExtra(key: string) {
   if (typeof key !== 'string') {
-    outputMsg('The parameter "key" of method "removeExtra" must a string value, please check again!', 'error')
+    outputMsg('The parameter "key" of method "removeExtra" must pass a string value, please check again!', 'error')
     return
   }
   delete extraOptions[key]
@@ -158,7 +158,7 @@ function clear() {
  */
 export function withScope(callback: Function) {
   if (typeof callback !== 'function') {
-    outputMsg('Method "withScope" must pass a function, please check again!', 'error')
+    outputMsg('Method "withScope" must pass a function value on parameter "callback", please check again!', 'error')
     return
   }
   callback({
@@ -176,7 +176,7 @@ export function withScope(callback: Function) {
 export function init(options: InitOptions) {
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    outputMsg('Method "init" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "init" must pass a object value, please check again!', 'error')
     return
   }
   // 非法的dsn参数
@@ -242,7 +242,7 @@ function getAPIAddress(): string {
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 非法的日志信息
   if (!isObject(options)) {
-    outputMsg('Method "getStoreOptions" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "getStoreOptions" must pass a object value, please check again!', 'error')
     return {
       url: '',
       headers: {},
@@ -308,7 +308,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
   // 非法的日志信息
   if (!isObject(options)) {
-    outputMsg('Method "getEnvelopeOptions" must pass a object parameter, please check again!', 'error')
+    outputMsg('Method "getEnvelopeOptions" must pass a object value, please check again!', 'error')
     return {
       url: '',
       headers: {},
