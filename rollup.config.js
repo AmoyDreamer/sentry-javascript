@@ -8,14 +8,13 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export default {
+const config = {
   input: './src/main.ts',
   output: [
     {
       file: './dist/index.js',
       format: 'iife',
-      name: 'Sentry',
-      plugins: [terser()]
+      name: 'Sentry'
     },
     {
       file: './dist/index.common.js',
@@ -36,3 +35,14 @@ export default {
     nodeResolve()
   ]
 }
+
+if (process.env.NODE_ENV === 'production') {
+    config.plugins.push(terser({
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }))
+}
+
+export default config
