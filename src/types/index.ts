@@ -1,13 +1,9 @@
 /** 日志级别类型 */
 type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
 /** 字符串值对象 */
-export interface StringValueObject {
-  [key: string]: string
-}
+export type StringValueObject = Record<string, string>
 /** 任意类型值对象 */
-interface AnyValueObject {
-  [key: string]: any
-}
+type AnyValueObject = Record<string, any>
 /** 必填配置项 */
 export interface RequiredOptions {
   /** Sentry日志服务的dsn */
@@ -68,9 +64,7 @@ export type TagOptions = StringValueObject
 /** http-header字段参数配置项 */
 export type HttpHeader = StringValueObject
 /** extra 参数配置项, 具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
-export interface ExtraOptions {
-  [key: string]: any
-}
+export type ExtraOptions = AnyValueObject
 /** message 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/message/ */
 export interface MessageOptions {
   message?: string

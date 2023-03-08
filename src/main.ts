@@ -18,6 +18,7 @@ import type {
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isObject } from './utils/type'
+import { deepMerge } from './utils/object'
 import { isOversized, limitSize, getDataSizeString } from './utils/size'
 import { request } from './utils/request'
 import { parseResponse, parseError } from './utils/response'
@@ -280,18 +281,12 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
       name: sdkName,
       version: sdkVersion
     },
-    request: {
-      ...getRequestOptions(),
-      ...request
-    },
+    request: deepMerge(getRequestOptions(), request),
     tags: {
       ...tagOptions,
       ...tags
     },
-    extra: {
-      ...extraOptions,
-      ...extra
-    },
+    extra: deepMerge(extraOptions, extra),
     ...restOptions
   }
   return {
@@ -340,18 +335,12 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
       ...userOptions,
       ...user
     },
-    request: {
-      ...getRequestOptions(),
-      ...request
-    },
+    request: deepMerge(getRequestOptions(), request),
     tags: {
       ...tagOptions,
       ...tags
     },
-    extra: {
-      ...extraOptions,
-      ...extra
-    },
+    extra: deepMerge(extraOptions, extra),
     ...restOptions
   }
   const payloadHeaders: EnvelopePayloadHeaderOptions = {
