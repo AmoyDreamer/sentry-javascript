@@ -31,7 +31,9 @@ export async function xhrWithRetry(url: string, options: Options = {}, externalO
   const headers = isObject(options.headers) ? options.headers : {}
   const body = options.body
   const method = typeof options.method === 'string' && allowMethods.includes(options.method) ? options.method : 'GET'
-
+  /**
+   * @method 具有状态过滤、数据解析、支持Promise的XMLHttpRequest
+   */
   const xhrPromise = async (): Promise<any> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
@@ -55,7 +57,9 @@ export async function xhrWithRetry(url: string, options: Options = {}, externalO
       xhr.send(body)
     })
   }
-
+  /**
+   * @method 重试请求
+   */
   const retry = async (): Promise<any> => {
     retryCount++
     if (retryCount <= maxRetries) {

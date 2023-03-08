@@ -14,7 +14,9 @@ export async function fetchWithRetry(url: string, options = {}, externalOptions:
   let retryCount = 0
   const maxRetries = typeof externalOptions.maxRetries === 'number' ? externalOptions.maxRetries : MAX_RETRIES
   const retryDelay = typeof externalOptions.retryDelay === 'number' ? externalOptions.retryDelay : RETRY_DELAY
-
+  /**
+   * @method 具有状态过滤、数据解析的fetch
+   */
   const fetchPromise = async (): Promise<any> => {
     return fetch(url, options).then(response => {
       if (!response.ok) {
@@ -25,7 +27,9 @@ export async function fetchWithRetry(url: string, options = {}, externalOptions:
       return response.json()
     })
   }
-
+  /**
+   * @method 重试请求
+   */
   const retry = async (): Promise<any> => {
     retryCount++
     if (retryCount <= maxRetries) {
