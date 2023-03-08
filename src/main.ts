@@ -31,13 +31,13 @@ const sdkVersion = '1.0.0'
 const sdkName = 'sentry.javascript.browser'
 /** Sentry SDK 基本配置项 */
 const basicOptions: BasicOptions = {
-  dsn: '',
-  enabled: true,
-  platform: 'javascript',
-  level: 'error',
-  serverName: window.location.hostname,
-  environment: 'production',
-  envelope: true
+  dsn: '',// Sentry DSN 配置
+  enabled: true,// 是否允许数据上报
+  platform: 'javascript',// 数据来源平台
+  level: 'error',// 数据级别
+  serverName: window.location.hostname,// 标明记录事件的主机名
+  environment: 'production',// 环境名称，默认为生产环境
+  envelope: true// 是否使用envelope接口上报数据
 }
 /** 初始化的 Sentry Scope User 基本配置项 */
 const initUserOptions: UserOptions = {
@@ -155,9 +155,9 @@ function clear() {
 /**
  * @method 使用全局的Scope
  */
-export function withScope(callback: Function) {
+export function configureScope(callback: Function) {
   if (typeof callback !== 'function') {
-    outputMsg('Method "withScope" must pass a function value on parameter "callback", please check again!', 'error')
+    outputMsg('Method "configureScope" must pass a function value on parameter "callback", please check again!', 'error')
     return
   }
   callback({
@@ -373,7 +373,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
   }
 }
 /**
- * @method 上传日志到日志服务器
+ * @method 上传日志到服务器
  */
 async function uploadLog(options: SentryCaptureOptions) {
   const requestOptions: UploadRequestOptions  = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
@@ -448,7 +448,7 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   let frames: StackTraceFrameItem[] = []
   // 存在有堆栈的场景下格式化堆栈信息
   if (stackFrames.length > 0) {
-    frames = (stackFrames || []).map((item: StackFrame) => ({
+    frames = stackFrames.map((item: StackFrame) => ({
       function: item.functionName || '',
       filename: item.fileName || '',
       abs_path: item.fileName || '',
@@ -478,7 +478,7 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
     outputMsg('Method "captureException" must pass a object value on parameter "options", please check again!', 'error')
     return
   }
-  // 存在可选配置项，则特殊处理message参数
+  // 存在可选配置项，则特殊处理exception参数
   const { exception = {}, ...restOptions } = options
   // 上传日志
   return uploadLog({

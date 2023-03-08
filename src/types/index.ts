@@ -1,10 +1,10 @@
 /** 日志级别类型 */
 type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
-/** 字符串对象 */
+/** 字符串值对象 */
 export interface StringValueObject {
   [key: string]: string
 }
-/** 任意类型对象 */
+/** 任意类型值对象 */
 interface AnyValueObject {
   [key: string]: any
 }
@@ -132,7 +132,7 @@ export interface EnvelopePayloadHeaderOptions {
 export interface EnvelopePayloadItemOptions {
   type: string
 }
-/** Sentry 日志捕获方法配置项对象 */
+/** Sentry日志捕获方法配置项对象 */
 export interface SentryCaptureOptions extends Partial<BasicApiOptions> {
   message?: string | MessageOptions
   type?: string

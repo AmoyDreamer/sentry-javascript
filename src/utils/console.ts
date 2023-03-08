@@ -1,4 +1,4 @@
-type LogKey = 'log' | 'debug' | 'info' | 'error'
+type LogKey = 'log' | 'debug' | 'info' | 'error' | 'warn'
 
 const moduleName = 'sentry-js-sdk'
 

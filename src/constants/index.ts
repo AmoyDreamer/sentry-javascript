@@ -1,8 +1,8 @@
-/** http状态码 - 成功 */
+/** http状态码 - Ok */
 export const HTTP_STATUS_SUCCESS = 200
 /** http状态码 - Bad Request */
 export const HTTP_STATUS_BAD_REQUEST = 400
-/** http状态码 - 并发请求太多，禁止请求 */
+/** http状态码 - Too Many Requests */
 export const HTTP_STATUS_TOO_MANY_REQUESTS = 429
 /** http状态码 - Internal Server Error */
 export const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500
