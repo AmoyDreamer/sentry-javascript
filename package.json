@@ -9,10 +9,9 @@
   "jsdelivr": "./dist/index.js",
   "exports": {
     ".": {
-      "import": {
-        "default": "./dist/es/index.js"
-      },
-      "require": "./dist/lib/index.js"
+      "import":  "./dist/es/index.js",
+      "require": "./dist/lib/index.js",
+      "types": "./dist/es/index.d.ts"
     }
   },
   "types": "./dist/es/index.d.ts",
