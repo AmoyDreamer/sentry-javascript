@@ -1,25 +1,52 @@
-import { isObject } from './type'
 /**
  * @method 对象深合并
  */
-export function deepMerge<T>(...sources: any[]): T {
-  const seen = new WeakMap()
-  const output: any = {}
+export function deepMerge<T extends object>(
+  target: T,
+  ...sources: object[]
+): T {
+  // 用于跟踪对象的引用
+  const seen: WeakSet<object> = new WeakSet()
 
-  for (const source of sources) {
-    if (isObject(source)) {
+  const merge = (target: any, source: any): any => {
+    if (typeof target !== 'object' || typeof source !== 'object') {
+      return source
+    }
+
+    if (seen.has(source)) {
+      return source
+    }
+
+    seen.add(source)
+
+    const result = Array.isArray(target) ? [...target] : { ...target }
+
+    if (Array.isArray(source)) {
+      for (let i = 0; i < source.length; i++) {
+        result[i] = i in target
+          ? merge(target[i], source[i])
+          : source[i]
+      }
+    } else {
       for (const key in source) {
         const sourceValue = source[key]
-
-        if (isObject(sourceValue)) {
-          if (!(key in output)) Object.assign(output, { [key]: {} })
-          output[key] = deepMerge(output[key], sourceValue, seen)
-        } else {
-          Object.assign(output, { [key]: sourceValue })
-        }
+        const targetValue = result[key]
+        result[key] = (typeof sourceValue === 'object' && sourceValue !== null)
+          ? (typeof targetValue === 'object' && targetValue !== null)
+            ? merge(targetValue, sourceValue)
+            : sourceValue
+          : sourceValue
       }
     }
+
+    seen.delete(source)
+
+    return result as T
   }
 
-  return output
+  sources.forEach((source) => {
+    target = merge(target, source)
+  })
+
+  return target
 }
