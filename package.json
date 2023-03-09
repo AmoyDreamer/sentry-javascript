@@ -4,17 +4,17 @@
   "description": "A generic Javascript SDK based on Self-Hosted Sentry.",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/es/index.js",
+  "module": "./esm/index.js",
   "unpkg": "./dist/index.js",
   "jsdelivr": "./dist/index.js",
   "exports": {
     ".": {
-      "import":  "./dist/es/index.js",
-      "require": "./dist/lib/index.js",
-      "types": "./dist/es/index.d.ts"
+      "import":  "./esm/index.js",
+      "require": "./cjs/index.js",
+      "types": "./esm/index.d.ts"
     }
   },
-  "types": "./dist/es/index.d.ts",
+  "types": "./esm/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "rollup -c --watch",

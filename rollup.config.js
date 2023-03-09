@@ -25,11 +25,11 @@ export default [{
       })]
     },
     {
-      file: './dist/lib/index.js',
+      file: './cjs/index.js',
       format: 'cjs'
     },
     {
-      file: './dist/es/index.js',
+      file: './esm/index.js',
       format: 'esm'
     }
   ],
@@ -45,7 +45,7 @@ export default [{
 }, {
   input: './src/index.d.ts',
   output: [{
-    file: './dist/es/index.d.ts',
+    file: './esm/index.d.ts',
     format: 'es'
   }],
   plugins: [dts()]
