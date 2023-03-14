@@ -37,7 +37,7 @@ export interface RequestOptions {
 /** SDK 基本参数类型 */
 export type BasicOptions = RequiredOptions & OptionalOptions
 /** SDK 初始化配置项类型 */
-export type InitOptions = RequiredOptions & Partial<OptionalOptions>
+export type SentryInitOptions = RequiredOptions & Partial<OptionalOptions>
 /** 解析DSN完成后返回的对象 */
 export interface ApiOptions {
   /** api地址 */
@@ -162,4 +162,23 @@ export interface RequestExternalOptions {
 /** 自定义的Http响应错误对象 */
 export interface CustomResponseError extends Error {
   status?: number
+}
+/** 全局的Scope对象 */
+export interface SentryScope {
+  /** 设置用户信息 */
+  setUser: (options: UserOptions | null) => void
+  /** 设置自定义标签信息 */
+  setTag: (key: string, value: string) => void
+  /** 移除自定义标签信息 */
+  removeTag: (key: string) => void
+  /** 设置自定义扩展信息 */
+  setExtra: (key: string, value: any) => void
+  /** 移除自定义扩展信息 */
+  removeExtra: (key: string) => void
+  /** 清空所有Scope配置 */
+  clear: () => void
+}
+/** 全局scope方法的回调函数类型 */
+export interface ConfigureScopeCallback extends Function {
+  (scope: SentryScope): void
 }

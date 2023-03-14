@@ -35,7 +35,7 @@ interface RequestOptions {
   env?: AnyValueObject
 }
 /** SDK 初始化配置项类型 */
-type InitOptions = RequiredOptions & Partial<OptionalOptions>
+type SentryInitOptions = RequiredOptions & Partial<OptionalOptions>
 /** user 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/user/ */
 interface UserOptions {
   ip_address?: string
@@ -109,12 +109,31 @@ interface SentrySDKResponse {
   /** 提示信息 */
   message: string
 }
+/** 全局的Scope对象 */
+interface SentryScope {
+  /** 设置用户信息 */
+  setUser: (options: UserOptions | null) => void
+  /** 设置自定义标签信息 */
+  setTag: (key: string, value: string) => void
+  /** 移除自定义标签信息 */
+  removeTag: (key: string) => void
+  /** 设置自定义扩展信息 */
+  setExtra: (key: string, value: any) => void
+  /** 移除自定义扩展信息 */
+  removeExtra: (key: string) => void
+  /** 清空所有Scope配置 */
+  clear: () => void
+}
+/** 全局scope方法的回调函数类型 */
+interface ConfigureScopeCallback extends Function {
+  (scope: SentryScope): void
+}
 
 declare module 'sentry-js-sdk' {
-  export function init(options: InitOptions): void
-  export function configureScope(callback: Function): void
+  export function init(options: SentryInitOptions): void
+  export function configureScope(callback: ConfigureScopeCallback): void
   export function captureMessage(message: string, options?: SentryCaptureOptions): Promise<any> | void
   export function captureException(err: Error, options?: SentryCaptureOptions): Promise<any> | void
 }
 
-export { ExceptionOptions, ExtraOptions, InitOptions, RequestOptions, SentryCaptureOptions, SentrySDKResponse, TagOptions, UserOptions };
+export { ExceptionOptions, ExtraOptions, RequestOptions, SentryCaptureOptions, SentryInitOptions, SentrySDKResponse, SentryScope, TagOptions, UserOptions };

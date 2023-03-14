@@ -1,6 +1,6 @@
 import type {
   BasicOptions,
-  InitOptions,
+  SentryInitOptions,
   ApiOptions,
   StoreApiOptions,
   HttpHeader,
@@ -14,14 +14,16 @@ import type {
   ExtraOptions,
   ExceptionOptions,
   StackTraceFrameItem,
-  RequestOptions
+  RequestOptions,
+  SentryScope,
+  ConfigureScopeCallback
 } from './types/index'
 import { outputMsg } from './utils/console'
 import { isObject } from './utils/type'
 import { deepMerge } from './utils/object'
 import { isOversized, limitSize, getDataSizeString } from './utils/size'
 import { request } from './utils/request'
-import { parseResponse, parseError } from './utils/response'
+import { parseResponse, parseError, getBadRequestResponse } from './utils/response'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
 /** Sentry DSN 正则 */
@@ -156,7 +158,7 @@ function clear() {
 /**
  * @method 使用全局的Scope
  */
-export function configureScope(callback: Function) {
+export function configureScope(callback: ConfigureScopeCallback) {
   if (typeof callback !== 'function') {
     outputMsg('Method "configureScope" must pass a function value on parameter "callback", please check again!', 'error')
     return
@@ -168,12 +170,12 @@ export function configureScope(callback: Function) {
     setExtra,
     removeExtra,
     clear
-  })
+  } as SentryScope)
 }
 /**
  * @method 初始化SDK
  */
-export function init(options: InitOptions) {
+export function init(options: SentryInitOptions) {
   // 非法地配置项对象参数
   if (!isObject(options)) {
     outputMsg('Method "init" must pass a object value, please check again!', 'error')
@@ -365,7 +367,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
  * @method 上传日志到服务器
  */
 async function uploadLog(options: SentryCaptureOptions) {
-  const requestOptions: UploadRequestOptions  = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
+  const requestOptions: UploadRequestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
   const url = requestOptions.url
   const headers: HttpHeader = requestOptions.headers
   const payload = requestOptions.payload
@@ -426,11 +428,12 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
  */
 export function captureException(err: Error, options?: SentryCaptureOptions) {
   // 禁止上传日志
-  if (!basicOptions.enabled) return
+  if (!basicOptions.enabled) return getBadRequestResponse()
   // 非法的err配置项
   if (typeof err !== 'object' || !(err instanceof Error)) {
-    outputMsg('Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!', 'error')
-    return
+    const errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err"'
+    outputMsg(`${errMsg}, please check again!`, 'error')
+    return getBadRequestResponse(errMsg)
   }
   // 解析获取堆栈
   const stackFrames: StackFrame[] = ErrorStackParser.parse(err)
@@ -464,8 +467,9 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    outputMsg('Method "captureException" must pass a object value on parameter "options", please check again!', 'error')
-    return
+    const errMsg = 'Method "captureException" must pass a object value on parameter "options"'
+    outputMsg(`${errMsg}, please check again!`, 'error')
+    return getBadRequestResponse(errMsg)
   }
   // 存在可选配置项，则特殊处理exception参数
   const { exception = {}, ...restOptions } = options

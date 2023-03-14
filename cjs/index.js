@@ -403,6 +403,28 @@ function request(url) {
 /** 状态码提示信息对象 */
 var errorMessages = (_errorMessages = {}, _defineProperty(_errorMessages, HTTP_STATUS_BAD_REQUEST, 'Bad Request'), _defineProperty(_errorMessages, HTTP_STATUS_TOO_MANY_REQUESTS, 'Too Many Requests'), _defineProperty(_errorMessages, HTTP_STATUS_INTERNAL_SERVER_ERROR, 'Internal Server Error'), _errorMessages);
 /**
+ * @method 获取请求错误返回值
+ */
+function getBadRequestResponse(msg) {
+  var code = HTTP_STATUS_BAD_REQUEST;
+  return {
+    code: code,
+    data: null,
+    message: msg || errorMessages[code]
+  };
+}
+/**
+ * @method 获取服务错误返回值
+ */
+function getInternalServerErrorResponse() {
+  var code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+  return {
+    code: code,
+    data: null,
+    message: errorMessages[code]
+  };
+}
+/**
  * @method 解析response
  */
 function parseResponse(res) {
@@ -416,15 +438,16 @@ function parseResponse(res) {
  * @method 解析error
  */
 function parseError(err) {
-  var code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
-  if (err.status && typeof err.status === 'number' && err.status < 1000 && errorMessages[err.status]) {
-    code = err.status;
+  var res = getInternalServerErrorResponse();
+  if (err.status && typeof err.status === 'number' && err.status < 1000) {
+    var msg = errorMessages[err.status];
+    // 匹配到预定义的状态码，则展示对应信息
+    if (msg) {
+      res.code = err.status;
+      res.message = msg;
+    }
   }
-  return {
-    code: code,
-    data: null,
-    message: errorMessages[code]
-  };
+  return res;
 }
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 var errorStackParserExports = {};
@@ -1154,11 +1177,12 @@ function captureMessage(message, options) {
  */
 function captureException(err, options) {
   // 禁止上传日志
-  if (!basicOptions.enabled) return;
+  if (!basicOptions.enabled) return getBadRequestResponse();
   // 非法的err配置项
   if (_typeof(err) !== 'object' || !(err instanceof Error)) {
-    outputMsg('Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!', 'error');
-    return;
+    var errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err"';
+    outputMsg("".concat(errMsg, ", please check again!"), 'error');
+    return getBadRequestResponse(errMsg);
   }
   // 解析获取堆栈
   var stackFrames = ErrorStackParser.parse(err);
@@ -1194,8 +1218,9 @@ function captureException(err, options) {
   }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    outputMsg('Method "captureException" must pass a object value on parameter "options", please check again!', 'error');
-    return;
+    var _errMsg = 'Method "captureException" must pass a object value on parameter "options"';
+    outputMsg("".concat(_errMsg, ", please check again!"), 'error');
+    return getBadRequestResponse(_errMsg);
   }
   // 存在可选配置项，则特殊处理exception参数
   var _options$exception = options.exception,
