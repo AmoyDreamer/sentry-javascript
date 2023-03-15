@@ -1,6 +1,7 @@
 import type {
   SentryInitOptions,
   SentryCaptureOptions,
+  LogLevel,
   UserOptions,
   TagOptions,
   ExtraOptions,
@@ -14,8 +15,8 @@ import type {
 declare module 'sentry-js-sdk' {
   export function init(options: SentryInitOptions): void
   export function configureScope(callback: ConfigureScopeCallback): void
-  export function captureMessage(message: string, options?: SentryCaptureOptions): Promise<any> | void
-  export function captureException(err: Error, options?: SentryCaptureOptions): Promise<any> | void
+  export function captureMessage(message: string, options?: LogLevel | SentryCaptureOptions): Promise<SentrySDKResponse> | SentrySDKResponse
+  export function captureException(err: Error, options?: SentryCaptureOptions): Promise<SentrySDKResponse> | SentrySDKResponse
 }
 
 export type {

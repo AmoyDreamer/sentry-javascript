@@ -61,12 +61,16 @@ function __awaiter(thisArg, _arguments, P, generator) {
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
 }
+
+/** 允许使用的日志类型集合 */
+var allowLogTypes = ['log', 'debug', 'info', 'error', 'warn'];
+/** 当前模块名称 */
 var moduleName = 'sentry-js-sdk';
 /**
  * @method 控制台输出信息
  */
 function outputMsg(msg, level) {
-  var key = level || 'log';
+  var key = level && allowLogTypes.includes(level) ? level : 'log';
   if (console.hasOwnProperty(key)) {
     console[key]("Module \"".concat(moduleName, "\" ").concat(key, " message => ").concat(msg));
   } else {
@@ -186,12 +190,18 @@ var HTTP_STATUS_BAD_REQUEST = 400;
 var HTTP_STATUS_TOO_MANY_REQUESTS = 429;
 /** http状态码 - Internal Server Error */
 var HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
+/** http状态码 - Payload Too Large */
+var HTTP_STATUS_PAYLOAY_TOO_LARGE = 413;
 /** 禁止重新请求的http状态码集合 */
 var DISABLE_RETRY_HTTP_STATUS_LIST = [HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_TOO_MANY_REQUESTS];
+/** 自定义状态码 - 禁止上传日志 */
+var CUSTOM_STATUS_DISABLE_UPLOAD_LOG = 10001;
 /** http请求 - 最大重试次数 */
 var MAX_RETRIES = 1;
 /** http请求 - 延迟重试请求时间（单位：毫秒） */
 var RETRY_DELAY = 1000;
+/** 允许设置的日志级别 */
+var ALLOW_LOG_LEVELS = ['fatal', 'error', 'warning', 'info', 'debug'];
 
 /**
  * @method 支持retry的fetch请求
@@ -401,7 +411,18 @@ function request(url) {
 }
 
 /** 状态码提示信息对象 */
-var errorMessages = (_errorMessages = {}, _defineProperty(_errorMessages, HTTP_STATUS_BAD_REQUEST, 'Bad Request'), _defineProperty(_errorMessages, HTTP_STATUS_TOO_MANY_REQUESTS, 'Too Many Requests'), _defineProperty(_errorMessages, HTTP_STATUS_INTERNAL_SERVER_ERROR, 'Internal Server Error'), _errorMessages);
+var errorMessages = (_errorMessages = {}, _defineProperty(_errorMessages, HTTP_STATUS_BAD_REQUEST, 'Bad Request'), _defineProperty(_errorMessages, HTTP_STATUS_TOO_MANY_REQUESTS, 'Too Many Requests'), _defineProperty(_errorMessages, HTTP_STATUS_INTERNAL_SERVER_ERROR, 'Internal Server Error'), _defineProperty(_errorMessages, HTTP_STATUS_PAYLOAY_TOO_LARGE, "The current size of the log to be uploaded has exceeded the ".concat(getDataSizeString(limitSize), " limit")), _defineProperty(_errorMessages, CUSTOM_STATUS_DISABLE_UPLOAD_LOG, 'Log uploading is disabled'), _errorMessages);
+/**
+ * @method 获取服务错误返回值
+ */
+function getInternalServerErrorResponse() {
+  var code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+  return {
+    code: code,
+    data: null,
+    message: errorMessages[code]
+  };
+}
 /**
  * @method 获取请求错误返回值
  */
@@ -414,15 +435,18 @@ function getBadRequestResponse(msg) {
   };
 }
 /**
- * @method 获取服务错误返回值
+ * @method 获取对应的错误码返回值
  */
-function getInternalServerErrorResponse() {
-  var code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
-  return {
-    code: code,
-    data: null,
-    message: errorMessages[code]
-  };
+function getResponseByCode(code) {
+  var msg = errorMessages[code];
+  if (msg) {
+    return {
+      code: code,
+      data: null,
+      message: msg
+    };
+  }
+  return getBadRequestResponse();
 }
 /**
  * @method 解析response
@@ -772,14 +796,17 @@ var ErrorStackParser = errorStackParserExports;
 
 /** Sentry DSN 正则 */
 var dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
+/** Sentry 项目版本号正则 */
+var releaseReg = /^.+@\d+\.\d+\.\d+$/;
 /** Sentry SDK 版本号 */
 var sdkVersion = '1.0.0';
 /** Sentry SDK 名称 */
 var sdkName = 'sentry.javascript.browser';
-/** Sentry SDK 基本配置项 */
+/** Sentry SDK 基本初始化配置项 */
 var basicOptions = {
   dsn: '',
   enabled: true,
+  debug: false,
   platform: 'javascript',
   level: 'error',
   serverName: window.location.hostname,
@@ -936,6 +963,23 @@ function init(options) {
   if (typeof options.envelope === 'boolean') {
     basicOptions.envelope = options.envelope;
   }
+  // 合法的debug参数值
+  if (typeof options.debug === 'boolean') {
+    basicOptions.debug = options.debug;
+  }
+  // 合法的environment参数值
+  if (typeof options.environment === 'string') {
+    basicOptions.environment = options.environment;
+  }
+  // release可选参数值校验
+  if (typeof options.release === 'string') {
+    // 非法的release参数值
+    if (!releaseReg.test(options.release)) {
+      outputMsg('The option parameter "release" in the method "init" must be a string in the format "my-project-name@1.0.0", please check again!', 'error');
+      return;
+    }
+    basicOptions.release = options.release;
+  }
 }
 /**
  * @method 解析DSN地址
@@ -977,15 +1021,6 @@ function getAPIAddress() {
  * @method 获取store接口请求配置
  */
 function getStoreOptions(options) {
-  // 非法的日志信息
-  if (!isObject(options)) {
-    outputMsg('Method "getStoreOptions" must pass a object value, please check again!', 'error');
-    return {
-      url: '',
-      headers: {},
-      payload: ''
-    };
-  }
   // 构造请求头
   var headers = {
     'Accept': 'application/json',
@@ -1000,23 +1035,16 @@ function getStoreOptions(options) {
     tags = _options$tags === void 0 ? {} : _options$tags,
     _options$extra = options.extra,
     extra = _options$extra === void 0 ? {} : _options$extra,
-    _options$platform = options.platform,
-    platform = _options$platform === void 0 ? basicOptions.platform : _options$platform,
-    _options$level = options.level,
-    level = _options$level === void 0 ? basicOptions.level : _options$level,
-    _options$server_name = options.server_name,
-    server_name = _options$server_name === void 0 ? basicOptions.serverName : _options$server_name,
-    _options$environment = options.environment,
-    environment = _options$environment === void 0 ? basicOptions.environment : _options$environment,
+    level = options.level,
     restOptions = __rest(options
     // 构造目标请求数据
-    , ["user", "request", "tags", "extra", "platform", "level", "server_name", "environment"]);
+    , ["user", "request", "tags", "extra", "level"]);
   // 构造目标请求数据
   var payload = Object.assign({
-    platform: platform,
-    level: level,
-    server_name: server_name,
-    environment: environment,
+    platform: basicOptions.platform,
+    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    server_name: basicOptions.serverName,
+    environment: basicOptions.environment,
     timestamp: new Date().toISOString(),
     user: Object.assign(Object.assign({}, userOptions), user),
     sdk: {
@@ -1038,15 +1066,6 @@ function getStoreOptions(options) {
  * @document https://develop.sentry.dev/sdk/envelopes/#serialization-format
  */
 function getEnvelopeOptions(options) {
-  // 非法的日志信息
-  if (!isObject(options)) {
-    outputMsg('Method "getEnvelopeOptions" must pass a object value, please check again!', 'error');
-    return {
-      url: '',
-      headers: {},
-      payload: ''
-    };
-  }
   // 解构需要独立处理的配置项
   var _options$user2 = options.user,
     user = _options$user2 === void 0 ? {} : _options$user2,
@@ -1058,24 +1077,17 @@ function getEnvelopeOptions(options) {
     extra = _options$extra2 === void 0 ? {} : _options$extra2,
     _options$type = options.type,
     type = _options$type === void 0 ? 'event' : _options$type,
-    _options$platform2 = options.platform,
-    platform = _options$platform2 === void 0 ? basicOptions.platform : _options$platform2,
-    _options$level2 = options.level,
-    level = _options$level2 === void 0 ? basicOptions.level : _options$level2,
-    _options$server_name2 = options.server_name,
-    server_name = _options$server_name2 === void 0 ? basicOptions.serverName : _options$server_name2,
-    _options$environment2 = options.environment,
-    environment = _options$environment2 === void 0 ? basicOptions.environment : _options$environment2,
+    level = options.level,
     _options$event_id = options.event_id,
     event_id = _options$event_id === void 0 ? '' : _options$event_id,
-    restOptions = __rest(options, ["user", "request", "tags", "extra", "type", "platform", "level", "server_name", "environment", "event_id"]);
+    restOptions = __rest(options, ["user", "request", "tags", "extra", "type", "level", "event_id"]);
   var headers = {};
   // 构造目标请求数据
   var targetPayload = Object.assign({
-    platform: platform,
-    level: level,
-    server_name: server_name,
-    environment: environment,
+    platform: basicOptions.platform,
+    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    server_name: basicOptions.serverName,
+    environment: basicOptions.environment,
     type: type,
     user: Object.assign(Object.assign({}, userOptions), user),
     request: deepMerge(getRequestOptions(), request),
@@ -1105,32 +1117,22 @@ function getEnvelopeOptions(options) {
  * @method 上传日志到服务器
  */
 function uploadLog(options) {
-  return __awaiter(this, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
-    var requestOptions, url, headers, payload;
-    return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-      while (1) switch (_context8.prev = _context8.next) {
-        case 0:
-          requestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options);
-          url = requestOptions.url;
-          headers = requestOptions.headers;
-          payload = requestOptions.payload; // 上传的日志内容超出限制大小
-          if (!isOversized(payload)) {
-            _context8.next = 6;
-            break;
-          }
-          return _context8.abrupt("return", Promise.reject("The current size of the log to be uploaded has exceeded the ".concat(getDataSizeString(limitSize), " limit")));
-        case 6:
-          return _context8.abrupt("return", request(url, {
-            method: 'POST',
-            headers: headers,
-            body: payload
-          }).then(parseResponse)["catch"](parseError));
-        case 7:
-        case "end":
-          return _context8.stop();
-      }
-    }, _callee8);
-  }));
+  var requestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options);
+  var url = requestOptions.url;
+  var headers = requestOptions.headers;
+  var payload = requestOptions.payload;
+  // 上传的日志内容超出限制大小
+  if (isOversized(payload)) {
+    var res = getResponseByCode(HTTP_STATUS_PAYLOAY_TOO_LARGE);
+    outputMsg(res.message, 'error');
+    return res;
+  }
+  // 发送相关数据到服务器
+  return request(url, {
+    method: 'POST',
+    headers: headers,
+    body: payload
+  }).then(parseResponse)["catch"](parseError);
 }
 /**
  * @method 捕获信息
@@ -1139,11 +1141,12 @@ function uploadLog(options) {
  */
 function captureMessage(message, options) {
   // 禁止上传日志
-  if (!basicOptions.enabled) return;
+  if (!basicOptions.enabled) return getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
   // 非法信息数据
   if (typeof message !== 'string' || message === '') {
-    outputMsg('Method "captureMessage" must pass a valid string value on parameter "message", please check again!', 'error');
-    return;
+    var errMsg = 'Method "captureMessage" must pass a valid string value on parameter "message", please check again!';
+    outputMsg(errMsg, 'error');
+    return getBadRequestResponse(errMsg);
   }
   // 预设配置
   var presetOptions = {
@@ -1156,10 +1159,22 @@ function captureMessage(message, options) {
       message: message
     }, presetOptions));
   }
+  // 如果有可选配置项，且为字符串，则确认是不是正确的日志级别配置
+  if (typeof options === 'string') {
+    // 如果是允许设置的日志级别，则更新
+    if (ALLOW_LOG_LEVELS.includes(options)) {
+      presetOptions.level = options;
+    }
+    // 上传日志
+    return uploadLog(Object.assign({
+      message: message
+    }, presetOptions));
+  }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    outputMsg('Method "captureMessage" must pass a object value on parameter "options", please check again!', 'error');
-    return;
+    var _errMsg = 'Method "captureMessage" must pass a string or object value on parameter "options", please check again!';
+    outputMsg(_errMsg, 'error');
+    return getBadRequestResponse(_errMsg);
   }
   // 存在可选配置项，则特殊处理message参数
   var _options$message = options.message,
@@ -1177,11 +1192,11 @@ function captureMessage(message, options) {
  */
 function captureException(err, options) {
   // 禁止上传日志
-  if (!basicOptions.enabled) return getBadRequestResponse();
+  if (!basicOptions.enabled) return getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
   // 非法的err配置项
   if (_typeof(err) !== 'object' || !(err instanceof Error)) {
-    var errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err"';
-    outputMsg("".concat(errMsg, ", please check again!"), 'error');
+    var errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!';
+    outputMsg(errMsg, 'error');
     return getBadRequestResponse(errMsg);
   }
   // 解析获取堆栈
@@ -1218,9 +1233,9 @@ function captureException(err, options) {
   }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    var _errMsg = 'Method "captureException" must pass a object value on parameter "options"';
-    outputMsg("".concat(_errMsg, ", please check again!"), 'error');
-    return getBadRequestResponse(_errMsg);
+    var _errMsg2 = 'Method "captureException" must pass a object value on parameter "options", please check again!';
+    outputMsg(_errMsg2, 'error');
+    return getBadRequestResponse(_errMsg2);
   }
   // 存在可选配置项，则特殊处理exception参数
   var _options$exception = options.exception,

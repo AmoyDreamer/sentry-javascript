@@ -1,5 +1,5 @@
 import type {
-  BasicOptions,
+  BasicInitOptions,
   SentryInitOptions,
   ApiOptions,
   StoreApiOptions,
@@ -8,6 +8,7 @@ import type {
   EnvelopeApiOptions,
   EnvelopePayloadHeaderOptions,
   EnvelopePayloadItemOptions,
+  LogLevel,
   SentryCaptureOptions,
   UserOptions,
   TagOptions,
@@ -21,21 +22,25 @@ import type {
 import { outputMsg } from './utils/console'
 import { isObject } from './utils/type'
 import { deepMerge } from './utils/object'
-import { isOversized, limitSize, getDataSizeString } from './utils/size'
+import { isOversized } from './utils/size'
 import { request } from './utils/request'
-import { parseResponse, parseError, getBadRequestResponse } from './utils/response'
+import { parseResponse, parseError, getBadRequestResponse, getResponseByCode } from './utils/response'
+import { CUSTOM_STATUS_DISABLE_UPLOAD_LOG, HTTP_STATUS_PAYLOAY_TOO_LARGE, ALLOW_LOG_LEVELS } from './constants'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
 /** Sentry DSN 正则 */
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
+/** Sentry 项目版本号正则 */
+const releaseReg = /^.+@\d+\.\d+\.\d+$/
 /** Sentry SDK 版本号 */
 const sdkVersion = '1.0.0'
 /** Sentry SDK 名称 */
 const sdkName = 'sentry.javascript.browser'
-/** Sentry SDK 基本配置项 */
-const basicOptions: BasicOptions = {
+/** Sentry SDK 基本初始化配置项 */
+const basicOptions: BasicInitOptions = {
   dsn: '',// Sentry DSN 配置
   enabled: true,// 是否允许数据上报
+  debug: false,// 是否开启debug模式
   platform: 'javascript',// 数据来源平台
   level: 'error',// 数据级别
   serverName: window.location.hostname,// 标明记录事件的主机名
@@ -201,6 +206,23 @@ export function init(options: SentryInitOptions) {
   if (typeof options.envelope === 'boolean') {
     basicOptions.envelope = options.envelope
   }
+  // 合法的debug参数值
+  if (typeof options.debug === 'boolean') {
+    basicOptions.debug = options.debug
+  }
+  // 合法的environment参数值
+  if (typeof options.environment === 'string') {
+    basicOptions.environment = options.environment
+  }
+  // release可选参数值校验
+  if (typeof options.release === 'string') {
+    // 非法的release参数值
+    if (!releaseReg.test(options.release)) {
+      outputMsg('The option parameter "release" in the method "init" must be a string in the format "my-project-name@1.0.0", please check again!', 'error')
+      return
+    }
+    basicOptions.release = options.release
+  }
 }
 /**
  * @method 解析DSN地址
@@ -242,15 +264,6 @@ function getAPIAddress(): string {
  * @method 获取store接口请求配置
  */
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
-  // 非法的日志信息
-  if (!isObject(options)) {
-    outputMsg('Method "getStoreOptions" must pass a object value, please check again!', 'error')
-    return {
-      url: '',
-      headers: {},
-      payload: ''
-    }
-  }
   // 构造请求头
   const headers: HttpHeader = {
     'Accept': 'application/json',
@@ -262,18 +275,15 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     request = {},
     tags = {},
     extra = {},
-    platform = basicOptions.platform,
-    level = basicOptions.level,
-    server_name = basicOptions.serverName,
-    environment = basicOptions.environment,
+    level,
     ...restOptions
   } = options
   // 构造目标请求数据
   const payload: StoreApiOptions = {
-    platform: platform,
-    level: level,
-    server_name: server_name,
-    environment: environment,
+    platform: basicOptions.platform,
+    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    server_name: basicOptions.serverName,
+    environment: basicOptions.environment,
     timestamp: new Date().toISOString(),
     user: {
       ...userOptions,
@@ -302,15 +312,6 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
  * @document https://develop.sentry.dev/sdk/envelopes/#serialization-format
  */
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
-  // 非法的日志信息
-  if (!isObject(options)) {
-    outputMsg('Method "getEnvelopeOptions" must pass a object value, please check again!', 'error')
-    return {
-      url: '',
-      headers: {},
-      payload: ''
-    }
-  }
   // 解构需要独立处理的配置项
   const {
     user = {},
@@ -318,20 +319,17 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     tags = {},
     extra = {},
     type = 'event',
-    platform = basicOptions.platform,
-    level = basicOptions.level,
-    server_name = basicOptions.serverName,
-    environment = basicOptions.environment,
+    level,
     event_id = '',
     ...restOptions
   } = options
   const headers: HttpHeader = {}
   // 构造目标请求数据
   const targetPayload: EnvelopeApiOptions = {
-    platform: platform,
-    level: level,
-    server_name: server_name,
-    environment: environment,
+    platform: basicOptions.platform,
+    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    server_name: basicOptions.serverName,
+    environment: basicOptions.environment,
     type: type,
     user: {
       ...userOptions,
@@ -366,14 +364,16 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
 /**
  * @method 上传日志到服务器
  */
-async function uploadLog(options: SentryCaptureOptions) {
+function uploadLog(options: SentryCaptureOptions) {
   const requestOptions: UploadRequestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
   const url = requestOptions.url
   const headers: HttpHeader = requestOptions.headers
   const payload = requestOptions.payload
   // 上传的日志内容超出限制大小
   if (isOversized(payload)) {
-    return Promise.reject(`The current size of the log to be uploaded has exceeded the ${getDataSizeString(limitSize)} limit`)
+    const res = getResponseByCode(HTTP_STATUS_PAYLOAY_TOO_LARGE)
+    outputMsg(res.message, 'error')
+    return res
   }
   // 发送相关数据到服务器
   return request(url, {
@@ -389,13 +389,14 @@ async function uploadLog(options: SentryCaptureOptions) {
  * @document basic options => https://develop.sentry.dev/sdk/event-payloads
  * @document message options => https://develop.sentry.dev/sdk/event-payloads/message/
  */
-export function captureMessage(message: string, options?: SentryCaptureOptions) {
+export function captureMessage(message: string, options?: LogLevel | SentryCaptureOptions) {
   // 禁止上传日志
-  if (!basicOptions.enabled) return
+  if (!basicOptions.enabled) return getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG)
   // 非法信息数据
   if (typeof message !== 'string' || message === '') {
-    outputMsg('Method "captureMessage" must pass a valid string value on parameter "message", please check again!', 'error')
-    return
+    const errMsg = 'Method "captureMessage" must pass a valid string value on parameter "message", please check again!'
+    outputMsg(errMsg, 'error')
+    return getBadRequestResponse(errMsg)
   }
   // 预设配置
   const presetOptions: SentryCaptureOptions = {
@@ -409,10 +410,23 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
       ...presetOptions
     })
   }
+  // 如果有可选配置项，且为字符串，则确认是不是正确的日志级别配置
+  if (typeof options === 'string') {
+    // 如果是允许设置的日志级别，则更新
+    if (ALLOW_LOG_LEVELS.includes(options)) {
+      presetOptions.level = options
+    }
+    // 上传日志
+    return uploadLog({
+      message: message,
+      ...presetOptions
+    })
+  }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    outputMsg('Method "captureMessage" must pass a object value on parameter "options", please check again!', 'error')
-    return
+    const errMsg = 'Method "captureMessage" must pass a string or object value on parameter "options", please check again!'
+    outputMsg(errMsg, 'error')
+    return getBadRequestResponse(errMsg)
   }
   // 存在可选配置项，则特殊处理message参数
   const { message: msg = message, ...restOptions } = options
@@ -428,11 +442,11 @@ export function captureMessage(message: string, options?: SentryCaptureOptions) 
  */
 export function captureException(err: Error, options?: SentryCaptureOptions) {
   // 禁止上传日志
-  if (!basicOptions.enabled) return getBadRequestResponse()
+  if (!basicOptions.enabled) return getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG)
   // 非法的err配置项
   if (typeof err !== 'object' || !(err instanceof Error)) {
-    const errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err"'
-    outputMsg(`${errMsg}, please check again!`, 'error')
+    const errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!'
+    outputMsg(errMsg, 'error')
     return getBadRequestResponse(errMsg)
   }
   // 解析获取堆栈
@@ -467,8 +481,8 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
   }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    const errMsg = 'Method "captureException" must pass a object value on parameter "options"'
-    outputMsg(`${errMsg}, please check again!`, 'error')
+    const errMsg = 'Method "captureException" must pass a object value on parameter "options", please check again!'
+    outputMsg(errMsg, 'error')
     return getBadRequestResponse(errMsg)
   }
   // 存在可选配置项，则特殊处理exception参数

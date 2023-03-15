@@ -1,29 +1,54 @@
+import { ALLOW_LOG_LEVELS } from '../constants'
 /** 日志级别类型 */
-type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
+export type LogLevel = typeof ALLOW_LOG_LEVELS[number]
 /** 字符串值对象 */
 export type StringValueObject = Record<string, string>
 /** 任意类型值对象 */
 type AnyValueObject = Record<string, any>
-/** 必填配置项 */
-export interface RequiredOptions {
+/** 必填的初始化配置项 */
+interface RequiredInitOptions {
   /** Sentry日志服务的dsn */
   dsn: string
 }
-/** 可选配置项 */
-export interface OptionalOptions {
+/** 可选的初始化配置项 */
+interface OptionalInitOptions {
   /** 是否上报数据到接口 */
   enabled: boolean
+  /** 是否使用envelope相关接口 */
+  envelope: boolean
+  /** 是否开启debug模式 */
+  debug: boolean
+  /** 环境，默认为生产环境 */
+  environment: string
+  /** 版本号 */
+  release?: string
+}
+/** SDK 基本的初始化配置项类型 */
+export interface BasicInitOptions extends RequiredInitOptions, OptionalInitOptions {
   /** 上报的SDK平台 */
   platform: string
   /** 日志级别，支持的值有fatal、error、warning、info、debug */
   level: LogLevel
   /** 记录事件来源的主机名 */
   serverName: string
-  /** 环境，默认为生产环境 */
-  environment: string
-  /** 是否使用envelope相关接口 */
-  envelope: boolean
 }
+/** SDK 初始化配置项类型 */
+export type SentryInitOptions = RequiredInitOptions & Partial<OptionalInitOptions>
+/** 解析DSN完成后返回的对象 */
+export interface ApiOptions {
+  /** api地址 */
+  uri: string
+  /** 公钥 */
+  publicKey: string
+  /** 项目id */
+  projectId: string
+}
+/** tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
+export type TagOptions = StringValueObject
+/** http-header字段参数配置项 */
+export type HttpHeader = StringValueObject
+/** extra 参数配置项, 具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
+export type ExtraOptions = AnyValueObject
 /** request 参数配置项，具体可见配置文档 => https://develop.sentry.dev/sdk/event-payloads/request/ */
 export interface RequestOptions {
   headers?: HttpHeader
@@ -34,19 +59,6 @@ export interface RequestOptions {
   cookies?: string
   env?: AnyValueObject
 }
-/** SDK 基本参数类型 */
-export type BasicOptions = RequiredOptions & OptionalOptions
-/** SDK 初始化配置项类型 */
-export type SentryInitOptions = RequiredOptions & Partial<OptionalOptions>
-/** 解析DSN完成后返回的对象 */
-export interface ApiOptions {
-  /** api地址 */
-  uri: string
-  /** 公钥 */
-  publicKey: string
-  /** 项目id */
-  projectId: string
-}
 /** user 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/user/ */
 export interface UserOptions {
   ip_address?: string
@@ -55,16 +67,10 @@ export interface UserOptions {
   email?: string
 }
 /** sdk 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/sdk/ */
-export interface SDKOptions {
+interface SDKOptions {
   name: string
   version: string
 }
-/** tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
-export type TagOptions = StringValueObject
-/** http-header字段参数配置项 */
-export type HttpHeader = StringValueObject
-/** extra 参数配置项, 具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
-export type ExtraOptions = AnyValueObject
 /** message 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/message/ */
 export interface MessageOptions {
   message?: string
@@ -94,17 +100,26 @@ export interface ExceptionItem {
 export interface ExceptionOptions {
   values: ExceptionItem[]
 }
-/** API基本参数类型 */
-export interface BasicApiOptions {
+/** 可选的基础配置项 */
+interface OptionalBaseOptions {
+  /** 上报的SDK平台 */
   platform: string
-  level: string
+  /** 日志级别，支持的值有fatal、error、warning、info、debug */
+  level: LogLevel
+  /** 记录事件来源的主机名 */
   server_name: string
+  /** 环境，默认为生产环境 */
   environment: string
+}
+/** 可选的接口配置项 */
+interface OptionalInterfaceOptions {
   user: UserOptions
   request: RequestOptions
   tags?: TagOptions
   extra?: ExtraOptions
 }
+/** API基本参数类型 */
+export type BasicApiOptions = OptionalBaseOptions & OptionalInterfaceOptions
 /** store接口基本参数类型，具体可见文档 => https://develop.sentry.dev/sdk/store/ */
 export interface StoreApiOptions extends BasicApiOptions {
   timestamp: string
@@ -127,7 +142,7 @@ export interface EnvelopePayloadItemOptions {
   type: string
 }
 /** Sentry日志捕获方法配置项对象 */
-export interface SentryCaptureOptions extends Partial<BasicApiOptions> {
+export interface SentryCaptureOptions extends Partial<OptionalInterfaceOptions & Pick<OptionalBaseOptions, 'level'>> {
   message?: string | MessageOptions
   type?: string
   event_id?: string
