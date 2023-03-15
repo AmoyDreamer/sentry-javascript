@@ -1,6 +1,5 @@
-import { ALLOW_LOG_LEVELS } from '../constants'
 /** 日志级别类型 */
-export type LogLevel = typeof ALLOW_LOG_LEVELS[number]
+export type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
 /** 字符串值对象 */
 export type StringValueObject = Record<string, string>
 /** 任意类型值对象 */

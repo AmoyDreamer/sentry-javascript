@@ -25,9 +25,11 @@ import { deepMerge } from './utils/object'
 import { isOversized } from './utils/size'
 import { request } from './utils/request'
 import { parseResponse, parseError, getBadRequestResponse, getResponseByCode } from './utils/response'
-import { CUSTOM_STATUS_DISABLE_UPLOAD_LOG, HTTP_STATUS_PAYLOAY_TOO_LARGE, ALLOW_LOG_LEVELS } from './constants'
+import { CUSTOM_STATUS_DISABLE_UPLOAD_LOG, HTTP_STATUS_PAYLOAY_TOO_LARGE } from './constants'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
+/** 允许设置的日志级别 */
+const allowLogLevels = ['fatal', 'error', 'warning', 'info', 'debug']
 /** Sentry DSN 正则 */
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
 /** Sentry 项目版本号正则 */
@@ -272,7 +274,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 构造目标请求数据
   const payload: StoreApiOptions = {
     platform: basicOptions.platform,
-    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     timestamp: new Date().toISOString(),
@@ -318,7 +320,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
   // 构造目标请求数据
   const targetPayload: EnvelopeApiOptions = {
     platform: basicOptions.platform,
-    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     type: type,
@@ -414,7 +416,7 @@ export function captureMessage(message: string, options?: LogLevel | SentryCaptu
   // 如果有可选配置项，且为字符串，则确认是不是正确的日志级别配置
   if (typeof options === 'string') {
     // 如果是允许设置的日志级别，则更新
-    if (ALLOW_LOG_LEVELS.includes(options)) {
+    if (allowLogLevels.includes(options)) {
       presetOptions.level = options
     }
     // 上传日志

@@ -1,8 +1,5 @@
-/** 允许设置的日志级别 */
-declare const ALLOW_LOG_LEVELS = ['fatal', 'error', 'warning', 'info', 'debug'] as const
-
 /** 日志级别类型 */
-type LogLevel = typeof ALLOW_LOG_LEVELS[number]
+type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
 /** 字符串值对象 */
 type StringValueObject = Record<string, string>
 /** 任意类型值对象 */

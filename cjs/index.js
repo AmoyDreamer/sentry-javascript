@@ -200,8 +200,6 @@ var CUSTOM_STATUS_DISABLE_UPLOAD_LOG = 10001;
 var MAX_RETRIES = 1;
 /** http请求 - 延迟重试请求时间（单位：毫秒） */
 var RETRY_DELAY = 1000;
-/** 允许设置的日志级别 */
-var ALLOW_LOG_LEVELS = ['fatal', 'error', 'warning', 'info', 'debug'];
 
 /**
  * @method 支持retry的fetch请求
@@ -794,6 +792,8 @@ function requireStackframe() {
 })(errorStackParser);
 var ErrorStackParser = errorStackParserExports;
 
+/** 允许设置的日志级别 */
+var allowLogLevels = ['fatal', 'error', 'warning', 'info', 'debug'];
 /** Sentry DSN 正则 */
 var dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
 /** Sentry 项目版本号正则 */
@@ -1033,7 +1033,7 @@ function getStoreOptions(options) {
   // 构造目标请求数据
   var payload = Object.assign({
     platform: basicOptions.platform,
-    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     timestamp: new Date().toISOString(),
@@ -1076,7 +1076,7 @@ function getEnvelopeOptions(options) {
   // 构造目标请求数据
   var targetPayload = Object.assign({
     platform: basicOptions.platform,
-    level: typeof level === 'string' && ALLOW_LOG_LEVELS.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     type: type,
@@ -1175,7 +1175,7 @@ function captureMessage(message, options) {
   // 如果有可选配置项，且为字符串，则确认是不是正确的日志级别配置
   if (typeof options === 'string') {
     // 如果是允许设置的日志级别，则更新
-    if (ALLOW_LOG_LEVELS.includes(options)) {
+    if (allowLogLevels.includes(options)) {
       presetOptions.level = options;
     }
     // 上传日志

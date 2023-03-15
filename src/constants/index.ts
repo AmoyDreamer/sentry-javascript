@@ -16,5 +16,3 @@ export const CUSTOM_STATUS_DISABLE_UPLOAD_LOG = 10001
 export const MAX_RETRIES = 1
 /** http请求 - 延迟重试请求时间（单位：毫秒） */
 export const RETRY_DELAY = 1000
-/** 允许设置的日志级别 */
-export const ALLOW_LOG_LEVELS = ['fatal', 'error', 'warning', 'info', 'debug'] as const
