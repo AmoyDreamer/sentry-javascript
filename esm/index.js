@@ -841,7 +841,7 @@ function getRequestOptions() {
  */
 function setUser(options) {
   if (_typeof(options) !== 'object') {
-    outputMsg('Method "setUser" must pass a object parameter, please check again!', 'error');
+    basicOptions.debug && outputMsg('Method "setUser" must pass a object parameter, please check again!', 'error');
     return;
   }
   if (options) {
@@ -855,7 +855,7 @@ function setUser(options) {
  */
 function setTag(key, value) {
   if (typeof key !== 'string' || typeof value !== 'string') {
-    outputMsg('Method "setTag" must pass two string parameter, please check again!', 'error');
+    basicOptions.debug && outputMsg('Method "setTag" must pass two string parameter, please check again!', 'error');
     return;
   }
   tagOptions[key] = value;
@@ -865,7 +865,7 @@ function setTag(key, value) {
  */
 function removeTag(key) {
   if (typeof key !== 'string') {
-    outputMsg('The parameter "key" of method "removeTag" must pass a string value, please check again!', 'error');
+    basicOptions.debug && outputMsg('The parameter "key" of method "removeTag" must pass a string value, please check again!', 'error');
     return;
   }
   delete tagOptions[key];
@@ -875,7 +875,7 @@ function removeTag(key) {
  */
 function setExtra(key, value) {
   if (typeof key !== 'string') {
-    outputMsg('The parameter "key" of method "setExtra" must pass a string value, please check again!', 'error');
+    basicOptions.debug && outputMsg('The parameter "key" of method "setExtra" must pass a string value, please check again!', 'error');
     return;
   }
   extraOptions[key] = value;
@@ -885,7 +885,7 @@ function setExtra(key, value) {
  */
 function removeExtra(key) {
   if (typeof key !== 'string') {
-    outputMsg('The parameter "key" of method "removeExtra" must pass a string value, please check again!', 'error');
+    basicOptions.debug && outputMsg('The parameter "key" of method "removeExtra" must pass a string value, please check again!', 'error');
     return;
   }
   delete extraOptions[key];
@@ -921,7 +921,7 @@ function clear() {
  */
 function configureScope(callback) {
   if (typeof callback !== 'function') {
-    outputMsg('Method "configureScope" must pass a function value on parameter "callback", please check again!', 'error');
+    basicOptions.debug && outputMsg('Method "configureScope" must pass a function value on parameter "callback", please check again!', 'error');
     return;
   }
   callback({
@@ -939,17 +939,17 @@ function configureScope(callback) {
 function init(options) {
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    outputMsg('Method "init" must pass a object value, please check again!', 'error');
+    basicOptions.debug && outputMsg('Method "init" must pass a object value, please check again!', 'error');
     return;
   }
   // 非法的dsn参数
   if (typeof options.dsn !== 'string') {
-    outputMsg('Method "init" must pass the value of "dsn" on options params, please check again!', 'error');
+    basicOptions.debug && outputMsg('Method "init" must pass the value of "dsn" on options params, please check again!', 'error');
     return;
   }
   // 非法的dsn格式
   if (!dsnReg.test(options.dsn)) {
-    outputMsg('"dsn" must be a valid value, please check again!', 'error');
+    basicOptions.debug && outputMsg('"dsn" must be a valid value, please check again!', 'error');
     return;
   }
   // 设置dsn
@@ -974,7 +974,7 @@ function init(options) {
   if (typeof options.release === 'string') {
     // 非法的release参数值
     if (!releaseReg.test(options.release)) {
-      outputMsg('The option parameter "release" in the method "init" must be a string in the format "my-project-name@1.0.0", please check again!', 'error');
+      basicOptions.debug && outputMsg('The option parameter "release" in the method "init" must be a string in the format "my-project-name@1.0.0", please check again!', 'error');
       return;
     }
     basicOptions.release = options.release;
@@ -984,15 +984,6 @@ function init(options) {
  * @method 解析DSN地址
  */
 function parseDSN() {
-  // 非法的dns
-  if (!basicOptions.dsn) {
-    outputMsg('Please check if the "init" method was called!', 'error');
-    return {
-      uri: '',
-      publicKey: '',
-      projectId: ''
-    };
-  }
   var matches = dsnReg.exec(basicOptions.dsn);
   var nodes = matches ? matches.slice(1) : [];
   // const [protocol, publicKey, _ = '', host, port = '', projectId] = nodes
@@ -1116,22 +1107,34 @@ function getEnvelopeOptions(options) {
  * @method 上传日志到服务器
  */
 function uploadLog(options) {
-  var requestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options);
-  var url = requestOptions.url;
-  var headers = requestOptions.headers;
-  var payload = requestOptions.payload;
-  // 上传的日志内容超出限制大小
-  if (isOversized(payload)) {
-    var res = getResponseByCode(HTTP_STATUS_PAYLOAY_TOO_LARGE);
-    outputMsg(res.message, 'error');
-    return res;
-  }
-  // 发送相关数据到服务器
-  return request(url, {
-    method: 'POST',
-    headers: headers,
-    body: payload
-  }).then(parseResponse)["catch"](parseError);
+  return __awaiter(this, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+    var requestOptions, url, headers, payload, res;
+    return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+      while (1) switch (_context8.prev = _context8.next) {
+        case 0:
+          requestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options);
+          url = requestOptions.url;
+          headers = requestOptions.headers;
+          payload = requestOptions.payload; // 上传的日志内容超出限制大小
+          if (!isOversized(payload)) {
+            _context8.next = 8;
+            break;
+          }
+          res = getResponseByCode(HTTP_STATUS_PAYLOAY_TOO_LARGE);
+          basicOptions.debug && outputMsg(res.message, 'error');
+          return _context8.abrupt("return", Promise.resolve(res));
+        case 8:
+          return _context8.abrupt("return", request(url, {
+            method: 'POST',
+            headers: headers,
+            body: payload
+          }).then(parseResponse)["catch"](parseError));
+        case 9:
+        case "end":
+          return _context8.stop();
+      }
+    }, _callee8);
+  }));
 }
 /**
  * @method 捕获信息
@@ -1139,13 +1142,23 @@ function uploadLog(options) {
  * @document message options => https://develop.sentry.dev/sdk/event-payloads/message/
  */
 function captureMessage(message, options) {
+  // 未配置dsn，则禁止上传
+  if (!basicOptions.dsn) {
+    var errMsg = 'Please check if the "init" method was called!';
+    basicOptions.debug && outputMsg(errMsg, 'error');
+    return Promise.resolve(getBadRequestResponse(errMsg));
+  }
   // 禁止上传日志
-  if (!basicOptions.enabled) return getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
+  if (!basicOptions.enabled) {
+    var res = getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
+    basicOptions.debug && outputMsg(res.message, 'warn');
+    return Promise.resolve(res);
+  }
   // 非法信息数据
   if (typeof message !== 'string' || message === '') {
-    var errMsg = 'Method "captureMessage" must pass a valid string value on parameter "message", please check again!';
-    outputMsg(errMsg, 'error');
-    return getBadRequestResponse(errMsg);
+    var _errMsg = 'Method "captureMessage" must pass a valid string value on parameter "message", please check again!';
+    basicOptions.debug && outputMsg(_errMsg, 'error');
+    return Promise.resolve(getBadRequestResponse(_errMsg));
   }
   // 预设配置
   var presetOptions = {
@@ -1171,9 +1184,9 @@ function captureMessage(message, options) {
   }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    var _errMsg = 'Method "captureMessage" must pass a string or object value on parameter "options", please check again!';
-    outputMsg(_errMsg, 'error');
-    return getBadRequestResponse(_errMsg);
+    var _errMsg2 = 'Method "captureMessage" must pass a string or object value on parameter "options", please check again!';
+    basicOptions.debug && outputMsg(_errMsg2, 'error');
+    return Promise.resolve(getBadRequestResponse(_errMsg2));
   }
   // 存在可选配置项，则特殊处理message参数
   var _options$message = options.message,
@@ -1190,13 +1203,23 @@ function captureMessage(message, options) {
  * @method 捕获异常
  */
 function captureException(err, options) {
+  // 未配置dsn，则禁止上传
+  if (!basicOptions.dsn) {
+    var errMsg = 'Please check if the "init" method was called!';
+    basicOptions.debug && outputMsg(errMsg, 'error');
+    return Promise.resolve(getBadRequestResponse(errMsg));
+  }
   // 禁止上传日志
-  if (!basicOptions.enabled) return getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
+  if (!basicOptions.enabled) {
+    var res = getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
+    basicOptions.debug && outputMsg(res.message, 'warn');
+    return Promise.resolve(res);
+  }
   // 非法的err配置项
   if (_typeof(err) !== 'object' || !(err instanceof Error)) {
-    var errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!';
-    outputMsg(errMsg, 'error');
-    return getBadRequestResponse(errMsg);
+    var _errMsg3 = 'Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!';
+    basicOptions.debug && outputMsg(_errMsg3, 'error');
+    return Promise.resolve(getBadRequestResponse(_errMsg3));
   }
   // 解析获取堆栈
   var stackFrames = ErrorStackParser.parse(err);
@@ -1232,9 +1255,9 @@ function captureException(err, options) {
   }
   // 非法地配置项对象参数
   if (!isObject(options)) {
-    var _errMsg2 = 'Method "captureException" must pass a object value on parameter "options", please check again!';
-    outputMsg(_errMsg2, 'error');
-    return getBadRequestResponse(_errMsg2);
+    var _errMsg4 = 'Method "captureException" must pass a object value on parameter "options", please check again!';
+    basicOptions.debug && outputMsg(_errMsg4, 'error');
+    return Promise.resolve(getBadRequestResponse(_errMsg4));
   }
   // 存在可选配置项，则特殊处理exception参数
   var _options$exception = options.exception,
