@@ -20,7 +20,7 @@ interface OptionalInitOptions {
   /** 环境，默认为生产环境 */
   environment: string
   /** 版本号 */
-  release?: string
+  release: string
 }
 /** SDK 基本的初始化配置项类型 */
 export interface BasicInitOptions extends RequiredInitOptions, OptionalInitOptions {
@@ -109,6 +109,8 @@ interface OptionalBaseOptions {
   server_name: string
   /** 环境，默认为生产环境 */
   environment: string
+  /** 版本号 */
+  release: string
 }
 /** 可选的接口配置项 */
 interface OptionalInterfaceOptions {

@@ -802,16 +802,19 @@ var releaseReg = /^.+@\d+\.\d+\.\d+$/;
 var sdkVersion = '1.0.0';
 /** Sentry SDK 名称 */
 var sdkName = 'sentry.javascript.browser';
+/** Sentry 默认日志级别 */
+var logLevel = 'error';
 /** Sentry SDK 基本初始化配置项 */
 var basicOptions = {
   dsn: '',
   enabled: true,
   debug: false,
   platform: 'javascript',
-  level: 'error',
+  level: logLevel,
   serverName: window.location.hostname,
   environment: 'production',
-  envelope: true // 是否使用envelope接口上报数据
+  envelope: true,
+  release: '' // 版本号
 };
 /** 初始化的 Sentry Scope User 基本配置项 */
 var initUserOptions = {
@@ -1036,6 +1039,7 @@ function getStoreOptions(options) {
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
+    release: basicOptions.release,
     timestamp: new Date().toISOString(),
     user: Object.assign(Object.assign({}, userOptions), user),
     sdk: {
@@ -1079,6 +1083,7 @@ function getEnvelopeOptions(options) {
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
+    release: basicOptions.release,
     type: type,
     user: Object.assign(Object.assign({}, userOptions), user),
     request: deepMerge(getRequestOptions(), request),

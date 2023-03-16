@@ -19,7 +19,7 @@ export default [{
       name: 'Sentry',
       plugins: [production && terser({
         compress: {
-          drop_console: true,
+          // drop_console: true,
           drop_debugger: true
         }
       })]

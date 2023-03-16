@@ -38,16 +38,19 @@ const releaseReg = /^.+@\d+\.\d+\.\d+$/
 const sdkVersion = '1.0.0'
 /** Sentry SDK 名称 */
 const sdkName = 'sentry.javascript.browser'
+/** Sentry 默认日志级别 */
+const logLevel = 'error'
 /** Sentry SDK 基本初始化配置项 */
 const basicOptions: BasicInitOptions = {
   dsn: '',// Sentry DSN 配置
   enabled: true,// 是否允许数据上报
   debug: false,// 是否开启debug模式
   platform: 'javascript',// 数据来源平台
-  level: 'error',// 数据级别
+  level: logLevel,// 日志级别，支持的值有fatal、error、warning、info、debug
   serverName: window.location.hostname,// 标明记录事件的主机名
   environment: 'production',// 环境名称，默认为生产环境
-  envelope: true// 是否使用envelope接口上报数据
+  envelope: true,// 是否使用envelope接口上报数据
+  release: ''// 版本号
 }
 /** 初始化的 Sentry Scope User 基本配置项 */
 const initUserOptions: UserOptions = {
@@ -277,6 +280,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
+    release: basicOptions.release,
     timestamp: new Date().toISOString(),
     user: {
       ...userOptions,
@@ -323,6 +327,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
+    release: basicOptions.release,
     type: type,
     user: {
       ...userOptions,
