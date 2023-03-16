@@ -801,15 +801,13 @@ var releaseReg = /^.+@\d+\.\d+\.\d+$/;
 var sdkVersion = '1.0.0';
 /** Sentry SDK 名称 */
 var sdkName = 'sentry.javascript.browser';
-/** Sentry 默认日志级别 */
-var logLevel = 'error';
 /** Sentry SDK 基本初始化配置项 */
 var basicOptions = {
   dsn: '',
   enabled: true,
   debug: false,
   platform: 'javascript',
-  level: logLevel,
+  level: 'error',
   serverName: window.location.hostname,
   environment: 'production',
   envelope: true,
@@ -825,6 +823,8 @@ var userOptions = Object.assign({}, initUserOptions);
 var tagOptions = {};
 /** Sentry Scope Extra 配置项 */
 var extraOptions = {};
+/** Sentry Scope 可选的日志级别 */
+var optionalLevel = '';
 /**
  * @method 获取request options
  */
@@ -894,6 +894,16 @@ function removeExtra(key) {
   delete extraOptions[key];
 }
 /**
+ * @method 设置日志级别
+ */
+function setLevel(level) {
+  if (!allowLogLevels.includes(level)) {
+    basicOptions.debug && outputMsg('The parameter "level" of method "setLevel" must pass a valid string value, please check again!', 'error');
+    return;
+  }
+  optionalLevel = level;
+}
+/**
  * @method 清空之前的 Scope User 配置
  */
 function clearUserOptions() {
@@ -912,11 +922,22 @@ function clearExtraOptions() {
   extraOptions = {};
 }
 /**
+ * @method 清空之前的 Scope 日志级别
+ */
+function clearLevel() {
+  optionalLevel = '';
+}
+/**
  * @method 清空所有Scope配置
  */
 function clear() {
+  // 清空之前的 Scope 日志级别
+  clearLevel();
+  // 清空之前的 Scope User 配置
   clearUserOptions();
+  // 清空之前的 Scope Tags 配置
   clearTagOptions();
+  // 清空之前的 Scope Extra 配置
   clearExtraOptions();
 }
 /**
@@ -927,14 +948,16 @@ function configureScope(callback) {
     basicOptions.debug && outputMsg('Method "configureScope" must pass a function value on parameter "callback", please check again!', 'error');
     return;
   }
-  callback({
+  var scope = {
     setUser: setUser,
     setTag: setTag,
     removeTag: removeTag,
     setExtra: setExtra,
     removeExtra: removeExtra,
+    setLevel: setLevel,
     clear: clear
-  });
+  };
+  callback(scope);
 }
 /**
  * @method 初始化SDK
@@ -1035,7 +1058,7 @@ function getStoreOptions(options) {
   // 构造目标请求数据
   var payload = Object.assign({
     platform: basicOptions.platform,
-    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : optionalLevel || basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     release: basicOptions.release,
@@ -1079,7 +1102,7 @@ function getEnvelopeOptions(options) {
   // 构造目标请求数据
   var targetPayload = Object.assign({
     platform: basicOptions.platform,
-    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : optionalLevel || basicOptions.level,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     release: basicOptions.release,
@@ -1167,7 +1190,7 @@ function captureMessage(message, options) {
   }
   // 预设配置
   var presetOptions = {
-    level: 'info'
+    level: optionalLevel || 'info'
   };
   // 如果没有可选配置项，直接抛数据
   if (typeof options === 'undefined') {

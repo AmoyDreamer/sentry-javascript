@@ -38,15 +38,13 @@ const releaseReg = /^.+@\d+\.\d+\.\d+$/
 const sdkVersion = '1.0.0'
 /** Sentry SDK 名称 */
 const sdkName = 'sentry.javascript.browser'
-/** Sentry 默认日志级别 */
-const logLevel = 'error'
 /** Sentry SDK 基本初始化配置项 */
 const basicOptions: BasicInitOptions = {
   dsn: '',// Sentry DSN 配置
   enabled: true,// 是否允许数据上报
   debug: false,// 是否开启debug模式
   platform: 'javascript',// 数据来源平台
-  level: logLevel,// 日志级别，支持的值有fatal、error、warning、info、debug
+  level: 'error',// 日志级别，支持的值有fatal、error、warning、info、debug
   serverName: window.location.hostname,// 标明记录事件的主机名
   environment: 'production',// 环境名称，默认为生产环境
   envelope: true,// 是否使用envelope接口上报数据
@@ -64,6 +62,8 @@ let userOptions: UserOptions = {
 let tagOptions: TagOptions = {}
 /** Sentry Scope Extra 配置项 */
 let extraOptions: ExtraOptions = {}
+/** Sentry Scope 可选的日志级别 */
+let optionalLevel = ''
 /**
  * @method 获取request options
  */
@@ -138,6 +138,16 @@ function removeExtra(key: string) {
   delete extraOptions[key]
 }
 /**
+ * @method 设置日志级别
+ */
+function setLevel(level: LogLevel) {
+  if (!allowLogLevels.includes(level)) {
+    basicOptions.debug && outputMsg('The parameter "level" of method "setLevel" must pass a valid string value, please check again!', 'error')
+    return
+  }
+  optionalLevel = level
+}
+/**
  * @method 清空之前的 Scope User 配置
  */
 function clearUserOptions() {
@@ -158,11 +168,22 @@ function clearExtraOptions() {
   extraOptions = {}
 }
 /**
+ * @method 清空之前的 Scope 日志级别
+ */
+function clearLevel() {
+  optionalLevel = ''
+}
+/**
  * @method 清空所有Scope配置
  */
 function clear() {
+  // 清空之前的 Scope 日志级别
+  clearLevel()
+  // 清空之前的 Scope User 配置
   clearUserOptions()
+  // 清空之前的 Scope Tags 配置
   clearTagOptions()
+  // 清空之前的 Scope Extra 配置
   clearExtraOptions()
 }
 /**
@@ -173,14 +194,16 @@ export function configureScope(callback: ConfigureScopeCallback) {
     basicOptions.debug && outputMsg('Method "configureScope" must pass a function value on parameter "callback", please check again!', 'error')
     return
   }
-  callback({
+  const scope: SentryScope = {
     setUser,
     setTag,
     removeTag,
     setExtra,
     removeExtra,
+    setLevel,
     clear
-  } as SentryScope)
+  }
+  callback(scope)
 }
 /**
  * @method 初始化SDK
@@ -277,7 +300,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   // 构造目标请求数据
   const payload: StoreApiOptions = {
     platform: basicOptions.platform,
-    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : (optionalLevel || basicOptions.level) as LogLevel,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     release: basicOptions.release,
@@ -324,7 +347,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
   // 构造目标请求数据
   const targetPayload: EnvelopeApiOptions = {
     platform: basicOptions.platform,
-    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : basicOptions.level,
+    level: typeof level === 'string' && allowLogLevels.includes(level) ? level : (optionalLevel || basicOptions.level) as LogLevel,
     server_name: basicOptions.serverName,
     environment: basicOptions.environment,
     release: basicOptions.release,
@@ -408,7 +431,7 @@ export function captureMessage(message: string, options?: LogLevel | SentryCaptu
   }
   // 预设配置
   const presetOptions: SentryCaptureOptions = {
-    level: 'info'
+    level: (optionalLevel || 'info') as LogLevel
   }
   // 如果没有可选配置项，直接抛数据
   if (typeof options === 'undefined') {

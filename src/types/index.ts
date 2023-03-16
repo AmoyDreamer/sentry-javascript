@@ -191,6 +191,8 @@ export interface SentryScope {
   setExtra: (key: string, value: any) => void
   /** 移除自定义扩展信息 */
   removeExtra: (key: string) => void
+  /** 设置日志级别 */
+  setLevel: (level: LogLevel) => void
   /** 清空所有Scope配置 */
   clear: () => void
 }
