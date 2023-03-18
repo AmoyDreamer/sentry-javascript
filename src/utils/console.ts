@@ -1,7 +1,7 @@
 /** 允许使用的日志类型集合 */
 const allowLogTypes = ['log', 'debug', 'info', 'error', 'warn'] as const
 /** 当前模块名称 */
-const moduleName = 'sentry-js-sdk'
+const moduleName = 'sentry-javascript'
 /**
  * @method 控制台输出信息
  */

@@ -138,7 +138,7 @@ interface ConfigureScopeCallback extends Function {
   (scope: SentryScope): void
 }
 
-declare module 'sentry-js-sdk' {
+declare module 'sentry-javascript' {
   export function init(options: SentryInitOptions): void
   export function configureScope(callback: ConfigureScopeCallback): void
   export function captureMessage(message: string, options?: LogLevel | SentryCaptureOptions): Promise<SentrySDKResponse>

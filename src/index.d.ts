@@ -12,7 +12,7 @@ import type {
   ConfigureScopeCallback
 } from './types'
 
-declare module 'sentry-js-sdk' {
+declare module 'sentry-javascript' {
   export function init(options: SentryInitOptions): void
   export function configureScope(callback: ConfigureScopeCallback): void
   export function captureMessage(message: string, options?: LogLevel | SentryCaptureOptions): Promise<SentrySDKResponse>

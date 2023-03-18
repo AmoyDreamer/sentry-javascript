@@ -65,7 +65,7 @@ function __awaiter(thisArg, _arguments, P, generator) {
 /** 允许使用的日志类型集合 */
 var allowLogTypes = ['log', 'debug', 'info', 'error', 'warn'];
 /** 当前模块名称 */
-var moduleName = 'sentry-js-sdk';
+var moduleName = 'sentry-javascript';
 /**
  * @method 控制台输出信息
  */
