@@ -76,7 +76,7 @@ try {
 }
 ```
 
-### Configuration Scope
+### Configure scope
 
 The current operation must be performed after initialization.
 
@@ -98,74 +98,74 @@ Sentry.configureScope((scope) => {
 
 | parameter | description | type | required | default value |
 |---|---|---|---|---|
-| options | Sentry Initializes the configuration item object of the log service | object | ✅ | - |
+| options | Sentry Initializes the configuration item object of the log. service | object | ✅ | - |
 
 ##### **options** parameter configuration items
 
 | parameter | description | type | required | default value |
 |---|---|---|---|---|
-| dsn | Sentry 日志服务的DSN，DSN 告诉 SDK 将事件发送到哪里（可通过配置后台获取）| string | 是 | - |
-| enabled | 是否允许上报数据 | boolean | 否 | true |
-| debug | 如果调试功能被启用，SDK 将尝试打印出有用的调试信息，如果在发送事件时出了问题。尽管开启调试模式不会引起任何安全问题，但通常不建议在生产环境中开启调试模式 | boolean | 否 | false |
-| envelope | 是否使用 envelope 接口上报数据，具体可参考 [Envelopes](https://develop.sentry.dev/sdk/envelopes/) 和 [Store Endpoint](https://develop.sentry.dev/sdk/store/) | boolean | 否 | true |
-| environment | 抛送日志数据的环境，一个版本可以与多个环境相关联，以便在用户界面上将它们分开（例如 staging vs prod 或者其它类似的比较）| string | 否 | production |
-| release | 版本号，建议格式 **my-project-name@1.0.0** | string | 否 | - |
+| dsn | DSN for the Sentry logging service, the DSN tells the SDK where to send the events (available through the configuration backend).| string | ✅ | - |
+| enabled | Whether to allow data to be reported. | boolean | ❌ | true |
+| debug | If debugging is enabled, the SDK will attempt to print out useful debugging information if something goes wrong while sending an event. Although enabling debug mode does not cause any security issues, it is usually not recommended to enable debug mode in production environments. | boolean | ❌ | false |
+| envelope | Whether to use the envelope interface to report data, see [Envelopes](https://develop.sentry.dev/sdk/envelopes/) and [Store Endpoint](https://develop.sentry.dev/sdk/store/) for details. | boolean | ❌ | true |
+| environment | Environments that send log data, a version can be associated with multiple environments to separate them in the user interface (e.g. staging vs prod or other similar comparisons). | string | ❌ | production |
+| release | Version number, suggested format **my-project-name@1.0.0**. | string | ❌ | - |
 
-##### 返回值
-无
+##### Return value
+None
 
-### 捕获信息
+### Capture message
 
 #### Sentry.captureMessage(message, options)
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| message | 要抛送的信息 | string | 是 | - |
-| options | 当传入的是一个字符串时，只能作为日志级别来使用，可使用的日志级别值有 fatal \| error \| warning \| info \| debug；当传入的是一个对象时，它作为一个可选参数配置项来使用，具体可见[配置项说明](#capture-方法的-options-参数配置项) | string/object | 否 | - |
+| message | Message to be sent. | string | ✅ | - |
+| options | When passed in as a string, it can only be used as a log level, the available values are fatal \| error \| warning \| info \| debug; when passed in as an object, it is used as an optional parameter configuration item, see [configuration item description](#the-options-of capture-methods) for details. | string/object | ❌ | - |
 
-#### 返回值
+#### Return value
 Promise\<SentrySDKResponse\>
 
-### 捕获错误
+### Capture exception
 
 #### Sentry.captureException(err, options)
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| err | 标准的错误实例，具体可参考 [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) | object | 是 | - |
-| options | 可选参数配置项，具体可见[配置项说明](#capture-方法的-options-参数配置项) | object | 否 | - |
+| err | Instance of a standard Error, see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) for details. | object | ✅ | - |
+| options | An optional parameter configuration item, see [configuration item description](#the-options-of capture-methods) for details. | object | ❌ | - |
 
-#### 返回值
+#### Return value
 Promise\<SentrySDKResponse\>
 
-### 配置 Scope
+### Configure scope
 
 #### Sentry.configureScope(callback)
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| callback | 全局作用域回调函数 | funciton | 是 | - |
+| callback | Global scope callback function. | funciton | ✅ | - |
 
-#### 返回值
-无
+#### Return value
+None
 
-#### 全局 Scope 对象说明
+#### Description of the global Scope object
 
->提供了以下几种方法
+>The following methods are provided.
 
-##### 设置用户信息
+##### Set user information
 
 **setUser(options)**
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| options | 设置用户信息，具体可参考[用户定义](https://develop.sentry.dev/sdk/event-payloads/user/) | object | 是 | - |
+| options | User information object, see [User Definition](https://develop.sentry.dev/sdk/event-payloads/user/) for details. | object | ✅ | - |
 
 ```js
 Sentry.configureScope((scope) => {
-  // 清空用户信息
+  // clear user information
   scope.setUser(null)
-  // 设置用户信息
+  // set user information
   scope.setUser({
     id: '666',
     email: 'john.doe@example.com'
@@ -173,27 +173,27 @@ Sentry.configureScope((scope) => {
 })
 ```
 
-##### 设置标签
+##### Set tags
 
 **setTag(key, value)**
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| key | 标签名 | string | 是 | - |
-| value | 标签值 | string | 是 | - |
+| key | Tag name. | string | ✅ | - |
+| value | Tag value. | string | ✅ | - |
 
 ```js
 Sentry.configureScope((scope) => {
   scope.setTag('my-tag', 'my value')
 })
 ```
-##### 移除标签
+##### Remove tag
 
 **removeTag(key)**
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| key | 标签名 | string | 是 | - |
+| key | Tag name. | string | ✅ | - |
 
 ```js
 Sentry.configureScope((scope) => {
@@ -201,14 +201,14 @@ Sentry.configureScope((scope) => {
 })
 ```
 
-##### 设置自定义扩展数据
+##### Set extra data
 
 **setExtra(key, value)**
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| key | 扩展数据名 | string | 是 | - |
-| value | 扩展数据值 | any | 是 | - |
+| key | Extra data name. | string | ✅ | - |
+| value | Extra data value. | any | ✅ | - |
 
 ```js
 Sentry.configureScope((scope) => {
@@ -218,13 +218,13 @@ Sentry.configureScope((scope) => {
   })
 })
 ```
-##### 移除自定义扩展数据
+##### Remove extra data
 
 **removeExtra(key)**
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| key | 扩展数据名 | string | 是 | - |
+| key | Extra data name. | string | ✅ | - |
 
 ```js
 Sentry.configureScope((scope) => {
@@ -232,13 +232,13 @@ Sentry.configureScope((scope) => {
 })
 ```
 
-##### 设置日志级别
+##### Set log level
 
 **setLevel(level)**
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| level | 日志级别，合法的值有 fatal \| error \| warning \| info \| debug | string | 是 | - |
+| level | Log level, the available values are fatal \| error \| warning \| info \| debug | string | ✅ | - |
 
 ```js
 Sentry.configureScope((scope) => {
@@ -247,70 +247,70 @@ Sentry.configureScope((scope) => {
 })
 ```
 
-##### 清空全局 Scope 配置
+##### Clear the global scope configuration
 
 **clear()**
 
 ```js
 Sentry.configureScope((scope) => {
-  // 清空之前的scope配置
+  // clear the previous scope configuration
   scope.clear()
-  // 设置新的标签信息
+  // set new tag
   scope.setTag('new-tag', 'new value')
 })
 ```
 
-### capture 方法的 options 参数配置项
+### The options of capture methods
 
-此配置项说明仅针对 `Sentry.captureMessage` 和 `Sentry.captureException`
+This configuration note is only for `Sentry.captureMessage` and `Sentry.captureException`.
 
-| 参数 | 说明 | 类型 | 必填 | 默认值 |
+| parameter | description | type | required | default value |
 |---|---|---|---|---|
-| event_id | 事件ID，要求是一个合法的十六进制 uuid4 字符串值。长度正好为32个字符。不允许使用破折号。必须是小写的。 | string | 否 | - |
-| message | 要抛送的信息，具体可参考[信息定义](https://develop.sentry.dev/sdk/event-payloads/message/)。如果该参数配置了一个合法的值，优先级将会高于 **Sentry.captureMessage** 方法的 `message` 参数 | string/object | 否 | - |
-| level | 日志级别，可使用的日志级别值有 fatal \| error \| warning \| info \| debug | string | 否 | info
-| type | 记录错误的事件模式，具体可参考[类型定义](https://develop.sentry.dev/sdk/event-payloads/types/)| string | 否 | event |
-| exception | 指定程序中发生的异常或错误，具体可参考[异常定义](https://develop.sentry.dev/sdk/event-payloads/exception/) | object | 否 | - |
-| request | 与事件相关的 HTTP 请求的信息，在客户端 SDK 中，这可以是传出请求，也可以是呈现当前网页的请求，具体可参考[请求定义](https://develop.sentry.dev/sdk/event-payloads/request/) | object | 否 | - |
-| user | 当前的认证用户信息，具体可参考[用户定义](https://develop.sentry.dev/sdk/event-payloads/user/) | object | 否 | `{ip_address: '{{auto}}'}` |
-| tags | 此事件标签列表，每个标签必须少于200个字符，具体可参考[事件负载配置](https://develop.sentry.dev/sdk/event-payloads/) | object | 否 | - |
-| extra | 附加的扩展数据，以便与事件一起存储，具体可参考[事件负载配置](https://develop.sentry.dev/sdk/event-payloads/) | object | 否 | - |
+| event_id | Hexadecimal string representing a uuid4 value. The length is exactly 32 characters. Dashes are not allowed. Has to be lowercase. | string | ❌ | - |
+| message | Message to be sent，see [Message Definition](https://develop.sentry.dev/sdk/event-payloads/message/) for details. If this parameter is configured with a legal value, it will take precedence over the `message` parameter of the **Sentry.captureMessage** method. | string/object | ❌ | - |
+| level | Log level, the available values are fatal \| error \| warning \| info \| debug. The default value of the `Sentry.captureMessage` method is **info**, and the default value of the `Sentry.captureException` method is **error**. | string | ❌ | - |
+| type | Event type for recording errors, see [Type Definition](https://develop.sentry.dev/sdk/event-payloads/types/) for details. | string | ❌ | event |
+| exception | Specify the exception or error that occurred in the program, see [Exception Definition](https://develop.sentry.dev/sdk/event-payloads/exception/) for details. | object | ❌ | - |
+| request | The Request interface contains information on a HTTP request related to the event. In client SDKs, this can be an outgoing request, or the request that rendered the current web page, see [Request Definition](https://develop.sentry.dev/sdk/event-payloads/request/) for details. | object | ❌ | - |
+| user | Current authenticated user information, see [User Definition](https://develop.sentry.dev/sdk/event-payloads/user/) for details. | object | ❌ | `{ip_address: '{{auto}}'}` |
+| tags | A map or list of tags for this event. Each tag must be less than 200 characters, see [Event Payloads](https://develop.sentry.dev/sdk/event-payloads/) for details. | object | ❌ | - |
+| extra | An arbitrary mapping of additional metadata to store with the event, see [Event Payloads](https://develop.sentry.dev/sdk/event-payloads/) for details. | object | ❌ | - |
 
-### capture 方法的返回值说明
+### Return value description of capture method
 
-**在阅读该返回值说明之前需要先了解下预定义的 [SDK信封](#sdk-信封)**
+**Before reading this return value description, you need to understand the predefined [SDK envelope](#sdk-envelope).**
 
-此返回值说明仅针对使用 `Sentry.captureMessage` 和 `Sentry.captureException` 成功抛送后的结果。
+This return value description is only for results sent successfully using `Sentry.captureMessage` and `Sentry.captureException`.
 
-| 字段 | 说明 | 类型 |
+| key | description | type |
 |---|---|---|
-| id | 事件id | string |
+| id | Event identifier. | string |
 
 
-## SDK 信封
+## SDK envelope
 
-预定义的SDK信封本质是一个object类型的数据，以下是它的一个结构说明
+The predefined SDK envelope is essentially a data of type object, and the following is a description of its structure.
 
-| 字段 | 说明 | 类型 | 默认值 |
+| key | description | type | default value |
 |---|---|---|---|
-| code | 错误码 | number | - |
-| data | 通信数据，任何有意义数据都会在此字段给出 | object | null |
-| message | 提示信息 | string | - |
+| code | Error code. | number | - |
+| data | Communication data, any meaningful data will be given in this field. | object | null |
+| message | Tip message | string | - |
 
-### 错误码说明
+### Error Code Description
 
-| 错误码 | 说明 |
+| error code | description |
 |---|---|
-| 0 | 成功 |
-| 400 | 请求失败，通常是一些调用和传递的参数错误导致 |
-| 413 | 请求体内容过大，例如抛送的数据太大，当前 SDK 限制了最大只能传 **20MB** 的数据 |
-| 429 | 请求太多，通常是服务本身因为并发负载太高而响应 |
-| 500 | 网络错误，通常是一些网络连接问题，例如请求超时 |
-| 10001 | 当前设置了禁止抛送数据 |
+| 0 | Success |
+| 400 | Bad request. Usually it is some call and passed parameter error that causes. |
+| 413 | Request content too large. For example, if the data sent is too large, the current SDK limits it to a maximum of **20MB**. |
+| 429 | Too many requests. It is usually the service itself that responds because the concurrent load is too high. |
+| 500 | Network errors. Usually some network connection problems, such as request timeouts. |
+| 10001 | The current SDK is set to disable sending data. |
 
-### 如何正确的开信封获取数据
+### How to open the envelope properly to get the data
 
-这是一个获取事件 id 的 demo
+This is a demo to get the event id.
 ```js
 import * as Sentry from 'sentry-javascript'
 
@@ -327,9 +327,9 @@ console.log('current event id is: ' + eventId)
 // output `current event id is: xxxxxxxx`
 ```
 
-## TypeScript 支持
+## TypeScript Support
 
-该模块天然支持 TypeScript，下面是一个 demo
+The module naturally supports TypeScript, and here is a demo.
 
 ```ts
 import * as Sentry from 'sentry-javascript'
