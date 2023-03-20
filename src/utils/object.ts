@@ -1,11 +1,11 @@
 /**
- * @method 对象深合并
+ * @method Object deep merge
  */
 export function deepMerge<T extends object>(
   target: T,
   ...sources: object[]
 ): T {
-  // 用于跟踪对象的引用
+  // References for tracking objects
   const seen: WeakSet<object> = new WeakSet()
 
   const merge = (target: any, source: any): any => {
