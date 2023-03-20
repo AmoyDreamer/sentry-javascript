@@ -121,7 +121,7 @@ None
 | parameter | description | type | required | default value |
 |---|---|---|---|---|
 | message | Message to be sent. | string | ✅ | - |
-| options | When passed in as a string, it can only be used as a log level, the available values are fatal \| error \| warning \| info \| debug; when passed in as an object, it is used as an optional parameter configuration item, see [configuration item description](#the-options-of capture-methods) for details. | string/object | ❌ | - |
+| options | When passed in as a string, it can only be used as a log level, the available values are fatal \| error \| warning \| info \| debug; when passed in as an object, it is used as an optional parameter configuration item, see [configuration item description](#the-options-of-capture-methods) for details. | string/object | ❌ | - |
 
 #### Return value
 Promise\<SentrySDKResponse\>
@@ -133,7 +133,7 @@ Promise\<SentrySDKResponse\>
 | parameter | description | type | required | default value |
 |---|---|---|---|---|
 | err | Instance of a standard Error, see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) for details. | object | ✅ | - |
-| options | An optional parameter configuration item, see [configuration item description](#the-options-of capture-methods) for details. | object | ❌ | - |
+| options | An optional parameter configuration item, see [configuration item description](#the-options-of-capture-methods) for details. | object | ❌ | - |
 
 #### Return value
 Promise\<SentrySDKResponse\>
