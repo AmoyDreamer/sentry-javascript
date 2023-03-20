@@ -798,7 +798,7 @@ var dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
 /** The regular expression of Sentry project version number */
 var releaseReg = /^.+@\d+\.\d+\.\d+$/;
 /** Sentry SDK version */
-var sdkVersion = '1.0.0';
+var sdkVersion = '1.0.1';
 /** Sentry SDK name */
 var sdkName = 'sentry.javascript.browser';
 /** Sentry SDK basic initialization configuration */

@@ -35,7 +35,7 @@ const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
 /** The regular expression of Sentry project version number */
 const releaseReg = /^.+@\d+\.\d+\.\d+$/
 /** Sentry SDK version */
-const sdkVersion = '1.0.0'
+const sdkVersion = '1.0.1'
 /** Sentry SDK name */
 const sdkName = 'sentry.javascript.browser'
 /** Sentry SDK basic initialization configuration */
