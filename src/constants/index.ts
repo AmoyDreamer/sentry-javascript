@@ -1,4 +1,4 @@
-/** http status - Ok */
+/** http status - OK */
 export const HTTP_STATUS_SUCCESS = 200
 /** http status - Bad Request */
 export const HTTP_STATUS_BAD_REQUEST = 400
