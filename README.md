@@ -155,7 +155,7 @@ None
 
 ##### Set user information
 
-**setUser(options)**
+**`setUser(options)`**
 
 | parameter | description | type | required | default value |
 |---|---|---|---|---|
@@ -347,3 +347,6 @@ const status = await getCaptureStatus()
 console.log('current data capture is ' + status)
 // output `current data capture is success`
 ```
+
+## License
+sentry-javascript is [MIT licensed](https://github.com/AmoyDreamer/sentry-javascript/blob/master/LICENSE).
