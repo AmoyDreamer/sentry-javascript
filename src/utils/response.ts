@@ -11,7 +11,7 @@ import {
   CUSTOM_STATUS_DISABLE_UPLOAD_LOG
 } from '../constants'
 import { limitSize, getDataSizeString } from './size'
-/** 状态码提示信息对象 */
+/** Error code prompt messages */
 const errorMessages: Readonly<StringValueObject> = {
   [HTTP_STATUS_BAD_REQUEST]: 'Bad Request',
   [HTTP_STATUS_TOO_MANY_REQUESTS]: 'Too Many Requests',
@@ -20,7 +20,7 @@ const errorMessages: Readonly<StringValueObject> = {
   [CUSTOM_STATUS_DISABLE_UPLOAD_LOG]: 'Log uploading is disabled'
 }
 /**
- * @method 获取服务错误返回值
+ * @method Get service error return value
  */
 function getInternalServerErrorResponse(): SentrySDKResponse {
   const code = HTTP_STATUS_INTERNAL_SERVER_ERROR
@@ -31,7 +31,7 @@ function getInternalServerErrorResponse(): SentrySDKResponse {
   }
 }
 /**
- * @method 获取请求错误返回值
+ * @method Get request error return value
  */
 export function getBadRequestResponse(msg?: string): SentrySDKResponse {
   const code = HTTP_STATUS_BAD_REQUEST
@@ -42,7 +42,7 @@ export function getBadRequestResponse(msg?: string): SentrySDKResponse {
   }
 }
 /**
- * @method 获取对应的错误码返回值
+ * @method Get the return value of the specified error code
  */
 export function getResponseByCode(code: number): SentrySDKResponse {
   const msg = errorMessages[code]
@@ -56,7 +56,7 @@ export function getResponseByCode(code: number): SentrySDKResponse {
   return getBadRequestResponse()
 }
 /**
- * @method 解析response
+ * @method Parse response
  */
 export function parseResponse(res: any): SentrySDKResponse {
   return {
@@ -66,13 +66,13 @@ export function parseResponse(res: any): SentrySDKResponse {
   }
 }
 /**
- * @method 解析error
+ * @method Parse error
  */
 export function parseError(err: CustomResponseError): SentrySDKResponse {
   const res = getInternalServerErrorResponse()
   if (err.status && typeof err.status === 'number' && err.status < 1000) {
     const msg: string = errorMessages[err.status]
-    // 匹配到预定义的状态码，则展示对应信息
+    // If a predefined error code is matched, the corresponding message is displayed.
     if (msg) {
       res.code = err.status
       res.message = msg
