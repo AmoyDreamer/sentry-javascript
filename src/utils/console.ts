@@ -1,9 +1,9 @@
-/** 允许使用的日志类型集合 */
+/** A collection of allowed log types */
 const allowLogTypes = ['log', 'debug', 'info', 'error', 'warn'] as const
-/** 当前模块名称 */
+/** Current module name */
 const moduleName = 'sentry-javascript'
 /**
- * @method 控制台输出信息
+ * @method Console output information
  */
 export function outputMsg(msg: string, level: typeof allowLogTypes[number]) {
   const key = level && allowLogTypes.includes(level) ? level : 'log'
