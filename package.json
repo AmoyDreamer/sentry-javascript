@@ -26,7 +26,15 @@
     "url": "git+https://github.com/AmoyDreamer/sentry-javascript.git"
   },
   "keywords": [
-    "sentry"
+    "sentry",
+    "javascript",
+    "typescript",
+    "browser",
+    "sentry-javascript",
+    "sentry-typescript",
+    "sentry-browser",
+    "self-hosted",
+    "self-hosted-sentry"
   ],
   "author": "Allen Liu",
   "license": "MIT",
