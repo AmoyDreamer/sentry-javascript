@@ -61,12 +61,12 @@ function __awaiter(thisArg, _arguments, P, generator) {
   });
 }
 
-/** 允许使用的日志类型集合 */
+/** A collection of allowed log types */
 var allowLogTypes = ['log', 'debug', 'info', 'error', 'warn'];
-/** 当前模块名称 */
+/** Current module name */
 var moduleName = 'sentry-javascript';
 /**
- * @method 控制台输出信息
+ * @method Console output information
  */
 function outputMsg(msg, level) {
   var key = level && allowLogTypes.includes(level) ? level : 'log';
@@ -78,17 +78,17 @@ function outputMsg(msg, level) {
 }
 
 /**
- * @method 是否是对象
+ * @method Determine if it is an object data
  */
 var isObject = function isObject(data) {
   return _typeof(data) === 'object' && data !== null && !Array.isArray(data);
 };
 
 /**
- * @method 对象深合并
+ * @method Object deep merge
  */
 function deepMerge(target) {
-  // 用于跟踪对象的引用
+  // References for tracking objects
   var seen = new WeakSet();
   var merge = function merge(target, source) {
     if (_typeof(target) !== 'object' || _typeof(source) !== 'object') {
@@ -122,29 +122,29 @@ function deepMerge(target) {
   return target;
 }
 
-/** 1KB大小 */
+/** 1KB size */
 var SIZE_KB = 1024;
-/** 1MB大小 */
+/** 1MB size */
 var SIZE_MB = Math.pow(SIZE_KB, 2);
-/** 1GB大小 */
+/** 1GB size */
 var SIZE_GB = Math.pow(SIZE_KB, 3);
-/** 日志抛送数据大小限制 - 20MB */
+/** Log sending data size limit - 20MB */
 var limitSize = 20 * SIZE_MB;
 /**
- * @method 获取字符串数据的字节数
+ * @method Get the number of bytes of string data
  */
 var byteSize = function byteSize(str) {
   return new Blob([str]).size;
 };
 /**
- * @method 是否超过数据大小上限
+ * @method Whether the data size limit is exceeded
  */
 var isOversized = function isOversized(str) {
   var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : limitSize;
   return byteSize(str) > size;
 };
 /**
- * @method 获取数据大小（带单位）
+ * @method Get data size (with units)
  */
 var getDataSizeString = function getDataSizeString(val) {
   var digits = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -161,13 +161,13 @@ var getDataSizeString = function getDataSizeString(val) {
 };
 
 /**
- * @method 是否支持原生的fetch方法
+ * @method Whether or not the native fetch method is supported
  */
 function isNativeFetch(func) {
   return func && /^function fetch\(\)\s+\{\s+\[native code\]\s+\}$/.test(func.toString());
 }
 /**
- * @method 判断是否支持fetch
+ * @method Determine if fetch is supported
  */
 function isSupportedFetch() {
   if (!window.fetch) return false;
@@ -181,27 +181,27 @@ function isSupportedFetch() {
   }
 }
 
-/** http状态码 - Ok */
+/** http status - OK */
 var HTTP_STATUS_SUCCESS = 200;
-/** http状态码 - Bad Request */
+/** http status - Bad Request */
 var HTTP_STATUS_BAD_REQUEST = 400;
-/** http状态码 - Too Many Requests */
+/** http status - Too Many Requests */
 var HTTP_STATUS_TOO_MANY_REQUESTS = 429;
-/** http状态码 - Internal Server Error */
+/** http status - Internal Server Error */
 var HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
-/** http状态码 - Payload Too Large */
+/** http status - Payload Too Large */
 var HTTP_STATUS_PAYLOAY_TOO_LARGE = 413;
-/** 禁止重新请求的http状态码集合 */
+/** the collection of http status codes that disabled retry request */
 var DISABLE_RETRY_HTTP_STATUS_LIST = [HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_TOO_MANY_REQUESTS];
-/** 自定义状态码 - 禁止上传日志 */
+/** custom status code - Disable Log Upload */
 var CUSTOM_STATUS_DISABLE_UPLOAD_LOG = 10001;
-/** http请求 - 最大重试次数 */
+/** http request - Maximum number of retries */
 var MAX_RETRIES = 1;
-/** http请求 - 延迟重试请求时间（单位：毫秒） */
+/** http request - Delayed retry request time (in ms) */
 var RETRY_DELAY = 1000;
 
 /**
- * @method 支持retry的fetch请求
+ * @method Support for retry fetch requests
  */
 function fetchWithRetry(url) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -216,7 +216,7 @@ function fetchWithRetry(url) {
           maxRetries = typeof externalOptions.maxRetries === 'number' ? externalOptions.maxRetries : MAX_RETRIES;
           retryDelay = typeof externalOptions.retryDelay === 'number' ? externalOptions.retryDelay : RETRY_DELAY;
           /**
-           * @method 具有状态过滤、数据解析的fetch
+           * @method Fetch with state filtering, data parsing
            */
           fetchPromise = function fetchPromise() {
             return __awaiter(_this, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -239,7 +239,7 @@ function fetchWithRetry(url) {
             }));
           };
           /**
-           * @method 重试请求
+           * @method Retry request
            */
           retry = function retry() {
             return __awaiter(_this, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -284,10 +284,10 @@ function fetchWithRetry(url) {
   }));
 }
 
-/** 允许的请求方式集合 */
+/** A collection of allowed request methods */
 var allowMethods = ['GET', 'POST', 'HEAD', 'PUT', 'OPTIONS', 'DELETE', 'CONNECT'];
 /**
- * @method 支持retry的XMLHttpRequest
+ * @method XMLHttpRequest with support for retry
  */
 function xhrWithRetry(url) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -305,7 +305,7 @@ function xhrWithRetry(url) {
           body = options.body;
           method = typeof options.method === 'string' && allowMethods.includes(options.method) ? options.method : 'GET';
           /**
-           * @method 具有状态过滤、数据解析、支持Promise的XMLHttpRequest
+           * @method XMLHttpRequest with state filtering, data parsing, and Promise support
            */
           xhrPromise = function xhrPromise() {
             return __awaiter(_this2, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
@@ -343,7 +343,7 @@ function xhrWithRetry(url) {
             }));
           };
           /**
-           * @method 重试请求
+           * @method Retry request
            */
           retry = function retry() {
             return __awaiter(_this2, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
@@ -389,7 +389,7 @@ function xhrWithRetry(url) {
 }
 
 /**
- * @method http请求
+ * @method Http request
  */
 function request(url) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -407,10 +407,10 @@ function request(url) {
   }));
 }
 
-/** 状态码提示信息对象 */
+/** Error code prompt messages */
 var errorMessages = (_errorMessages = {}, _defineProperty(_errorMessages, HTTP_STATUS_BAD_REQUEST, 'Bad Request'), _defineProperty(_errorMessages, HTTP_STATUS_TOO_MANY_REQUESTS, 'Too Many Requests'), _defineProperty(_errorMessages, HTTP_STATUS_INTERNAL_SERVER_ERROR, 'Internal Server Error'), _defineProperty(_errorMessages, HTTP_STATUS_PAYLOAY_TOO_LARGE, "The current size of the log to be uploaded has exceeded the ".concat(getDataSizeString(limitSize), " limit")), _defineProperty(_errorMessages, CUSTOM_STATUS_DISABLE_UPLOAD_LOG, 'Log uploading is disabled'), _errorMessages);
 /**
- * @method 获取服务错误返回值
+ * @method Get service error return value
  */
 function getInternalServerErrorResponse() {
   var code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
@@ -421,7 +421,7 @@ function getInternalServerErrorResponse() {
   };
 }
 /**
- * @method 获取请求错误返回值
+ * @method Get request error return value
  */
 function getBadRequestResponse(msg) {
   var code = HTTP_STATUS_BAD_REQUEST;
@@ -432,7 +432,7 @@ function getBadRequestResponse(msg) {
   };
 }
 /**
- * @method 获取对应的错误码返回值
+ * @method Get the return value of the specified error code
  */
 function getResponseByCode(code) {
   var msg = errorMessages[code];
@@ -446,7 +446,7 @@ function getResponseByCode(code) {
   return getBadRequestResponse();
 }
 /**
- * @method 解析response
+ * @method Parse response
  */
 function parseResponse(res) {
   return {
@@ -456,13 +456,13 @@ function parseResponse(res) {
   };
 }
 /**
- * @method 解析error
+ * @method Parse error
  */
 function parseError(err) {
   var res = getInternalServerErrorResponse();
   if (err.status && typeof err.status === 'number' && err.status < 1000) {
     var msg = errorMessages[err.status];
-    // 匹配到预定义的状态码，则展示对应信息
+    // If a predefined error code is matched, the corresponding message is displayed.
     if (msg) {
       res.code = err.status;
       res.message = msg;
@@ -791,17 +791,17 @@ function requireStackframe() {
 })(errorStackParser);
 var ErrorStackParser = errorStackParserExports;
 
-/** 允许设置的日志级别 */
+/** Log levels allowed to be set */
 var allowLogLevels = ['fatal', 'error', 'warning', 'info', 'debug'];
-/** Sentry DSN 正则 */
+/** The regular expression of Sentry DSN */
 var dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
-/** Sentry 项目版本号正则 */
+/** The regular expression of Sentry project version number */
 var releaseReg = /^.+@\d+\.\d+\.\d+$/;
-/** Sentry SDK 版本号 */
+/** Sentry SDK version */
 var sdkVersion = '1.0.0';
-/** Sentry SDK 名称 */
+/** Sentry SDK name */
 var sdkName = 'sentry.javascript.browser';
-/** Sentry SDK 基本初始化配置项 */
+/** Sentry SDK basic initialization configuration */
 var basicOptions = {
   dsn: '',
   enabled: true,
@@ -811,22 +811,22 @@ var basicOptions = {
   serverName: window.location.hostname,
   environment: 'production',
   envelope: true,
-  release: '' // 版本号
+  release: '' // Version number, suggested format my-project-name@1.0.0.
 };
-/** 初始化的 Sentry Scope User 基本配置项 */
+/** Initialized Sentry scope user basic configuration */
 var initUserOptions = {
-  ip_address: '{{auto}}' // 用户ip地址，此处默认为服务器自动获取
+  ip_address: '{{auto}}' // User ip address, where the default is automatically obtained by the server.
 };
-/** Sentry Scope User 配置项 */
+/** Sentry scope user configuration */
 var userOptions = Object.assign({}, initUserOptions);
-/** Sentry Scope Tags 配置项 */
+/** Sentry scope tags configuration */
 var tagOptions = {};
-/** Sentry Scope Extra 配置项 */
+/** Sentry scope extra information configuration */
 var extraOptions = {};
-/** Sentry Scope 可选的日志级别 */
+/** Sentry scope optional log level */
 var optionalLevel = '';
 /**
- * @method 获取request options
+ * @method Get request configuration
  */
 function getRequestOptions() {
   return {
@@ -839,7 +839,7 @@ function getRequestOptions() {
   };
 }
 /**
- * @method 设置用户信息
+ * @method Set user information
  * @document https://develop.sentry.dev/sdk/event-payloads/user/
  */
 function setUser(options) {
@@ -854,7 +854,7 @@ function setUser(options) {
   }
 }
 /**
- * @method 设置自定义标签信息
+ * @method Set tags
  */
 function setTag(key, value) {
   if (typeof key !== 'string' || typeof value !== 'string') {
@@ -864,7 +864,7 @@ function setTag(key, value) {
   tagOptions[key] = value;
 }
 /**
- * @method 移除自定义标签信息
+ * @method Remove Tags
  */
 function removeTag(key) {
   if (typeof key !== 'string') {
@@ -874,7 +874,7 @@ function removeTag(key) {
   delete tagOptions[key];
 }
 /**
- * @method 设置自定义扩展信息
+ * @method Set extra information
  */
 function setExtra(key, value) {
   if (typeof key !== 'string') {
@@ -884,7 +884,7 @@ function setExtra(key, value) {
   extraOptions[key] = value;
 }
 /**
- * @method 移除自定义扩展信息
+ * @method Remove extra information
  */
 function removeExtra(key) {
   if (typeof key !== 'string') {
@@ -894,7 +894,7 @@ function removeExtra(key) {
   delete extraOptions[key];
 }
 /**
- * @method 设置日志级别
+ * @method Set log level
  */
 function setLevel(level) {
   if (!allowLogLevels.includes(level)) {
@@ -904,44 +904,44 @@ function setLevel(level) {
   optionalLevel = level;
 }
 /**
- * @method 清空之前的 Scope User 配置
+ * @method Clear scope user configuration
  */
 function clearUserOptions() {
   userOptions = Object.assign({}, initUserOptions);
 }
 /**
- * @method 清空之前的 Scope Tags 配置
+ * @method Clear scope tag configuration
  */
 function clearTagOptions() {
   tagOptions = {};
 }
 /**
- * @method 清空之前的 Scope Extra 配置
+ * @method Clear scope extra configuration
  */
 function clearExtraOptions() {
   extraOptions = {};
 }
 /**
- * @method 清空之前的 Scope 日志级别
+ * @method Clear scope log level
  */
 function clearLevel() {
   optionalLevel = '';
 }
 /**
- * @method 清空所有Scope配置
+ * @method Clear all scope configurations
  */
 function clear() {
-  // 清空之前的 Scope 日志级别
+  // Clear scope log level
   clearLevel();
-  // 清空之前的 Scope User 配置
+  // Clear scope user configuration
   clearUserOptions();
-  // 清空之前的 Scope Tags 配置
+  // Clear scope tag configuration
   clearTagOptions();
-  // 清空之前的 Scope Extra 配置
+  // Clear scope extra configuration
   clearExtraOptions();
 }
 /**
- * @method 使用全局的Scope
+ * @method Using the global scope
  */
 function configureScope(callback) {
   if (typeof callback !== 'function') {
@@ -960,45 +960,45 @@ function configureScope(callback) {
   callback(scope);
 }
 /**
- * @method 初始化SDK
+ * @method Initializing Sentry SDK
  */
 function init(options) {
-  // 非法地配置项对象参数
+  // Illegal configuration item object parameter
   if (!isObject(options)) {
     basicOptions.debug && outputMsg('Method "init" must pass a object value, please check again!', 'error');
     return;
   }
-  // 非法的dsn参数
+  // Illegal dsn parameter
   if (typeof options.dsn !== 'string') {
     basicOptions.debug && outputMsg('Method "init" must pass the value of "dsn" on options params, please check again!', 'error');
     return;
   }
-  // 非法的dsn格式
+  // Illegal dsn format
   if (!dsnReg.test(options.dsn)) {
     basicOptions.debug && outputMsg('"dsn" must be a valid value, please check again!', 'error');
     return;
   }
-  // 设置dsn
+  // Set dsn
   basicOptions.dsn = options.dsn;
-  // 合法的enabled参数值
+  // Valid enabled parameter value
   if (typeof options.enabled === 'boolean') {
     basicOptions.enabled = options.enabled;
   }
-  // 合法的envelope参数值
+  // Valid envelope parameter value
   if (typeof options.envelope === 'boolean') {
     basicOptions.envelope = options.envelope;
   }
-  // 合法的debug参数值
+  // Valid debug parameter value
   if (typeof options.debug === 'boolean') {
     basicOptions.debug = options.debug;
   }
-  // 合法的environment参数值
+  // Valid environment parameter value
   if (typeof options.environment === 'string') {
     basicOptions.environment = options.environment;
   }
-  // release可选参数值校验
+  // The verification of release optional parameter value
   if (typeof options.release === 'string') {
-    // 非法的release参数值
+    // Valid release parameter value
     if (!releaseReg.test(options.release)) {
       basicOptions.debug && outputMsg('The option parameter "release" in the method "init" must be a string in the format "my-project-name@1.0.0", please check again!', 'error');
       return;
@@ -1007,7 +1007,7 @@ function init(options) {
   }
 }
 /**
- * @method 解析DSN地址
+ * @method Parse DSN address
  */
 function parseDSN() {
   var matches = dsnReg.exec(basicOptions.dsn);
@@ -1025,7 +1025,7 @@ function parseDSN() {
   };
 }
 /**
- * @method 获取api地址
+ * @method Get API address
  */
 function getAPIAddress() {
   var key = basicOptions.envelope ? 'envelope' : 'store';
@@ -1034,15 +1034,15 @@ function getAPIAddress() {
   return url;
 }
 /**
- * @method 获取store接口请求配置
+ * @method Get store interface request configuration
  */
 function getStoreOptions(options) {
-  // 构造请求头
+  // Constructing request headers
   var headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   };
-  // 解构需要独立处理的配置项
+  // Deconstruct configuration items that need to be handled independently
   var _options$user = options.user,
     user = _options$user === void 0 ? {} : _options$user,
     _options$request = options.request,
@@ -1053,9 +1053,9 @@ function getStoreOptions(options) {
     extra = _options$extra === void 0 ? {} : _options$extra,
     level = options.level,
     restOptions = __rest(options
-    // 构造目标请求数据
+    // Constructing target request data
     , ["user", "request", "tags", "extra", "level"]);
-  // 构造目标请求数据
+  // Constructing target request data
   var payload = Object.assign({
     platform: basicOptions.platform,
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : optionalLevel || basicOptions.level,
@@ -1079,11 +1079,11 @@ function getStoreOptions(options) {
   };
 }
 /**
- * @method 通过envelope接口请求配置
+ * @method Get envelope interface request configuration
  * @document https://develop.sentry.dev/sdk/envelopes/#serialization-format
  */
 function getEnvelopeOptions(options) {
-  // 解构需要独立处理的配置项
+  // Deconstruct configuration items that need to be handled independently
   var _options$user2 = options.user,
     user = _options$user2 === void 0 ? {} : _options$user2,
     _options$request2 = options.request,
@@ -1099,7 +1099,7 @@ function getEnvelopeOptions(options) {
     event_id = _options$event_id === void 0 ? '' : _options$event_id,
     restOptions = __rest(options, ["user", "request", "tags", "extra", "type", "level", "event_id"]);
   var headers = {};
-  // 构造目标请求数据
+  // Constructing target request data
   var targetPayload = Object.assign({
     platform: basicOptions.platform,
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : optionalLevel || basicOptions.level,
@@ -1132,7 +1132,7 @@ function getEnvelopeOptions(options) {
   };
 }
 /**
- * @method 上传日志到服务器
+ * @method Upload logs to the server
  */
 function uploadLog(options) {
   return __awaiter(this, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
@@ -1143,7 +1143,7 @@ function uploadLog(options) {
           requestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options);
           url = requestOptions.url;
           headers = requestOptions.headers;
-          payload = requestOptions.payload; // 上传的日志内容超出限制大小
+          payload = requestOptions.payload; // The uploaded log content exceeds the size limit
           if (!isOversized(payload)) {
             _context8.next = 8;
             break;
@@ -1165,94 +1165,94 @@ function uploadLog(options) {
   }));
 }
 /**
- * @method 捕获信息
+ * @method Capture message
  * @document basic options => https://develop.sentry.dev/sdk/event-payloads
  * @document message options => https://develop.sentry.dev/sdk/event-payloads/message/
  */
 function captureMessage(message, options) {
-  // 未配置dsn，则禁止上传
+  // If dsn is not configured, uploading is disabled
   if (!basicOptions.dsn) {
     var errMsg = 'Please check if the "init" method was called!';
     basicOptions.debug && outputMsg(errMsg, 'error');
     return Promise.resolve(getBadRequestResponse(errMsg));
   }
-  // 禁止上传日志
+  // Disable uploading logs
   if (!basicOptions.enabled) {
     var res = getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
     basicOptions.debug && outputMsg(res.message, 'warn');
     return Promise.resolve(res);
   }
-  // 非法信息数据
+  // Illegal information data
   if (typeof message !== 'string' || message === '') {
     var _errMsg = 'Method "captureMessage" must pass a valid string value on parameter "message", please check again!';
     basicOptions.debug && outputMsg(_errMsg, 'error');
     return Promise.resolve(getBadRequestResponse(_errMsg));
   }
-  // 预设配置
+  // Preset configuration
   var presetOptions = {
     level: optionalLevel || 'info'
   };
-  // 如果没有可选配置项，直接抛数据
+  // If there is no optional configuration, send directly data.
   if (typeof options === 'undefined') {
-    // 上传日志
+    // upload log
     return uploadLog(Object.assign({
       message: message
     }, presetOptions));
   }
-  // 如果有可选配置项，且为字符串，则确认是不是正确的日志级别配置
+  // If there is an optional configuration item and it is a string, confirm that it is the correct log level configuration.
   if (typeof options === 'string') {
-    // 如果是允许设置的日志级别，则更新
+    // If log level is allowed to be set, update the configuration.
     if (allowLogLevels.includes(options)) {
       presetOptions.level = options;
     }
-    // 上传日志
+    // upload log
     return uploadLog(Object.assign({
       message: message
     }, presetOptions));
   }
-  // 非法地配置项对象参数
+  // Illegal configuration parameter
   if (!isObject(options)) {
     var _errMsg2 = 'Method "captureMessage" must pass a string or object value on parameter "options", please check again!';
     basicOptions.debug && outputMsg(_errMsg2, 'error');
     return Promise.resolve(getBadRequestResponse(_errMsg2));
   }
-  // 存在可选配置项，则特殊处理message参数
+  // If an optional configuration item exists, the message parameter is handled specially.
   var _options$message = options.message,
     msg = _options$message === void 0 ? message : _options$message,
     restOptions = __rest(options
-    // 上传日志
+    // upload log
     , ["message"]);
-  // 上传日志
+  // upload log
   return uploadLog(Object.assign(Object.assign({
     message: msg
   }, presetOptions), restOptions));
 }
 /**
- * @method 捕获异常
+ * @method Capture exception
  */
 function captureException(err, options) {
-  // 未配置dsn，则禁止上传
+  // If dsn is not configured, uploading is disabled
   if (!basicOptions.dsn) {
     var errMsg = 'Please check if the "init" method was called!';
     basicOptions.debug && outputMsg(errMsg, 'error');
     return Promise.resolve(getBadRequestResponse(errMsg));
   }
-  // 禁止上传日志
+  // Disable uploading logs
   if (!basicOptions.enabled) {
     var res = getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG);
     basicOptions.debug && outputMsg(res.message, 'warn');
     return Promise.resolve(res);
   }
-  // 非法的err配置项
+  // Illegal err parameter value
   if (_typeof(err) !== 'object' || !(err instanceof Error)) {
     var _errMsg3 = 'Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!';
     basicOptions.debug && outputMsg(_errMsg3, 'error');
     return Promise.resolve(getBadRequestResponse(_errMsg3));
   }
-  // 解析获取堆栈
+  // Parsing to get the stack
   var stackFrames = ErrorStackParser.parse(err);
   var frames = [];
-  // 存在有堆栈的场景下格式化堆栈信息
+  // Formatting stack information if a stack exists
   if (stackFrames.length > 0) {
     frames = stackFrames.map(function (item) {
       return {
@@ -1274,26 +1274,26 @@ function captureException(err, options) {
       }
     }]
   };
-  // 如果没有可选配置项，直接抛数据
+  // If there is no optional configuration, send directly data.
   if (typeof options === 'undefined') {
-    // 上传日志
+    // upload log
     return uploadLog({
       exception: exceptionOption
     });
   }
-  // 非法地配置项对象参数
+  // Illegal configuration parameter
   if (!isObject(options)) {
     var _errMsg4 = 'Method "captureException" must pass a object value on parameter "options", please check again!';
     basicOptions.debug && outputMsg(_errMsg4, 'error');
     return Promise.resolve(getBadRequestResponse(_errMsg4));
   }
-  // 存在可选配置项，则特殊处理exception参数
+  // If an optional configuration item exists, the exception parameter is handled specially.
   var _options$exception = options.exception,
     exception = _options$exception === void 0 ? {} : _options$exception,
     restOptions = __rest(options
-    // 上传日志
+    // upload log
     , ["exception"]);
-  // 上传日志
+  // upload log
   return uploadLog(Object.assign({
     exception: Object.assign(Object.assign({}, exceptionOption), exception)
   }, restOptions));

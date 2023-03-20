@@ -1,36 +1,36 @@
-/** 日志级别类型 */
+/** log level */
 type LogLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug'
-/** 字符串值对象 */
+/** string value object */
 type StringValueObject = Record<string, string>
-/** 任意类型值对象 */
+/** any value object */
 type AnyValueObject = Record<string, any>
-/** 必填的初始化配置项 */
+/** Required initialization configuration */
 interface RequiredInitOptions {
-  /** Sentry日志服务的dsn */
+  /** Sentry log service DSN. */
   dsn: string
 }
-/** 可选的初始化配置项 */
+/** Optional initialization configuration */
 interface OptionalInitOptions {
-  /** 是否上报数据到接口 */
+  /** Whether to allow data to be reported. */
   enabled: boolean
-  /** 是否使用envelope相关接口 */
+  /** Whether to use the envelope interface to report data. */
   envelope: boolean
-  /** 是否开启debug模式 */
+  /** Whether to enable debug mode. */
   debug: boolean
-  /** 环境，默认为生产环境 */
+  /** Environments that send log data, default value is "production". */
   environment: string
-  /** 版本号 */
+  /** Version number, suggested format my-project-name@1.0.0. */
   release: string
 }
-/** SDK 初始化配置项类型 */
+/** SDK initialization configuration */
 type SentryInitOptions = RequiredInitOptions & Partial<OptionalInitOptions>
-/** tag 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
+/** tag parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/#optional-attributes" for details. */
 type TagOptions = StringValueObject
-/** http-header字段参数配置项 */
+/** http-header field parameter configuration */
 type HttpHeader = StringValueObject
-/** extra 参数配置项, 具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/#optional-attributes */
+/** extra parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/#optional-attributes" for details. */
 type ExtraOptions = AnyValueObject
-/** request 参数配置项，具体可见配置文档 => https://develop.sentry.dev/sdk/event-payloads/request/ */
+/** request parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/request/" for details. */
 interface RequestOptions {
   headers?: HttpHeader
   method?: string
@@ -40,19 +40,19 @@ interface RequestOptions {
   cookies?: string
   env?: AnyValueObject
 }
-/** user 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/user/ */
+/** user parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/user/" for details. */
 interface UserOptions {
   ip_address?: string
   id?: string | number
   username?: string
   email?: string
 }
-/** message 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/message/ */
+/** message parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/message/" for details. */
 interface MessageOptions {
   message?: string
   params?: string[]
 }
-/** statcktrace frames 参数配置项对象，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/stacktrace/#frame-attributes */
+/** statcktrace frames parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/stacktrace/#frame-attributes" for details. */
 interface StackTraceFrameItem {
   in_app?: boolean
   function: string
@@ -61,79 +61,79 @@ interface StackTraceFrameItem {
   colno?: number
   abs_path?: string
 }
-/** statcktrace 参数配置项对象，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/stacktrace/#attributes */
+/** statcktrace parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/stacktrace/#attributes" for details. */
 interface StackTraceOptions {
   frames: StackTraceFrameItem[]
 }
-/** exception values 参数配置项对象 */
+/** exception values parameter configuration */
 interface ExceptionItem {
   type: string
   value: string
   module?: string
   stacktrace?: StackTraceOptions
 }
-/** exception 参数配置项，具体可见文档 => https://develop.sentry.dev/sdk/event-payloads/exception/ */
+/** exception parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/exception/" for details. */
 interface ExceptionOptions {
   values: ExceptionItem[]
 }
-/** 可选的基础配置项 */
+/** Optional base configuration */
 interface OptionalBaseOptions {
-  /** 上报的SDK平台 */
+  /** A string representing the platform the SDK is submitting from. */
   platform: string
-  /** 日志级别，支持的值有fatal、error、warning、info、debug */
+  /** Log level, the available values are "fatal" | "error" | "warning" | "info" | "debug". */
   level: LogLevel
-  /** 记录事件来源的主机名 */
+  /** Identifies the host from which the event was recorded. */
   server_name: string
-  /** 环境，默认为生产环境 */
+  /** Environments that send log data, default value is "production". */
   environment: string
-  /** 版本号 */
+  /** Version number, suggested format my-project-name@1.0.0. */
   release: string
 }
-/** 可选的接口配置项 */
+/** Optional interface configuration */
 interface OptionalInterfaceOptions {
   user: UserOptions
   request: RequestOptions
   tags?: TagOptions
   extra?: ExtraOptions
 }
-/** Sentry日志捕获方法配置项对象 */
+/** The configuration of Sentry log capture method */
 interface SentryCaptureOptions extends Partial<OptionalInterfaceOptions & Pick<OptionalBaseOptions, 'level'>> {
   message?: string | MessageOptions
   type?: string
   event_id?: string
   exception?: ExceptionOptions
 }
-/** Sentry相关API接口回调对象 */
+/** Sentry-related API interface response object */
 interface SentryAPIResponse {
   id: string
 }
-/** SDK默认返回的信封 */
+/** Sentry SDK default return envelope */
 interface SentrySDKResponse {
-  /** 错误码 */
+  /** Error code */
   code: number
-  /** 传送的数据 */
+  /** Communication data */
   data: SentryAPIResponse | null
-  /** 提示信息 */
+  /** Tip message */
   message: string
 }
-/** 全局的Scope对象 */
+/** The global scope object */
 interface SentryScope {
-  /** 设置用户信息 */
+  /** set user information */
   setUser: (options: UserOptions | null) => void
-  /** 设置自定义标签信息 */
+  /** set tags */
   setTag: (key: string, value: string) => void
-  /** 移除自定义标签信息 */
+  /** remove tag */
   removeTag: (key: string) => void
-  /** 设置自定义扩展信息 */
+  /** set extra information */
   setExtra: (key: string, value: any) => void
-  /** 移除自定义扩展信息 */
+  /** remove extra information */
   removeExtra: (key: string) => void
-  /** 设置日志级别 */
+  /** set log level */
   setLevel: (level: LogLevel) => void
-  /** 清空所有Scope配置 */
+  /** Clear all scope configurations */
   clear: () => void
 }
-/** 全局scope方法的回调函数类型 */
+/** Callback function of global scope method */
 interface ConfigureScopeCallback extends Function {
   (scope: SentryScope): void
 }
