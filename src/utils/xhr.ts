@@ -10,19 +10,19 @@ import type {
   HttpHeader,
   CustomResponseError
 } from '../types'
-/** 允许的请求方式集合 */
+/** A collection of allowed request methods */
 const allowMethods = ['GET', 'POST', 'HEAD', 'PUT', 'OPTIONS', 'DELETE', 'CONNECT'] as const
-/** xhrWithRetry 请求配置项对象 */
+/** xhrWithRetry request configuration */
 interface Options {
-  /** http请求头对象 */
+  /** http request headers */
   headers?: HttpHeader
-  /** http请求体内容 */
+  /** http request body content */
   body?: XMLHttpRequestBodyInit
-  /** http请求方法 */
+  /** http request method */
   method?: typeof allowMethods[number]
 }
 /**
- * @method 支持retry的XMLHttpRequest
+ * @method XMLHttpRequest with support for retry
  */
 export async function xhrWithRetry(url: string, options: Options = {}, externalOptions: RequestExternalOptions = {}) {
   let retryCount = 0
@@ -32,7 +32,7 @@ export async function xhrWithRetry(url: string, options: Options = {}, externalO
   const body = options.body
   const method = typeof options.method === 'string' && allowMethods.includes(options.method) ? options.method : 'GET'
   /**
-   * @method 具有状态过滤、数据解析、支持Promise的XMLHttpRequest
+   * @method XMLHttpRequest with state filtering, data parsing, and Promise support
    */
   const xhrPromise = async (): Promise<any> => {
     return new Promise((resolve, reject) => {
@@ -58,7 +58,7 @@ export async function xhrWithRetry(url: string, options: Options = {}, externalO
     })
   }
   /**
-   * @method 重试请求
+   * @method Retry request
    */
   const retry = async (): Promise<any> => {
     retryCount++
