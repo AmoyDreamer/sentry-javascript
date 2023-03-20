@@ -8,14 +8,14 @@ import {
   RETRY_DELAY
 } from '../constants'
 /**
- * @method 支持retry的fetch请求
+ * @method Support for retry fetch requests
  */
 export async function fetchWithRetry(url: string, options = {}, externalOptions: RequestExternalOptions = {}) {
   let retryCount = 0
   const maxRetries = typeof externalOptions.maxRetries === 'number' ? externalOptions.maxRetries : MAX_RETRIES
   const retryDelay = typeof externalOptions.retryDelay === 'number' ? externalOptions.retryDelay : RETRY_DELAY
   /**
-   * @method 具有状态过滤、数据解析的fetch
+   * @method Fetch with state filtering, data parsing
    */
   const fetchPromise = async (): Promise<any> => {
     return fetch(url, options).then(response => {
@@ -28,7 +28,7 @@ export async function fetchWithRetry(url: string, options = {}, externalOptions:
     })
   }
   /**
-   * @method 重试请求
+   * @method Retry request
    */
   const retry = async (): Promise<any> => {
     retryCount++
