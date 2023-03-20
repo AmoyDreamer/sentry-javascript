@@ -7,12 +7,12 @@ A generic Javascript SDK based on [Self-Hosted Sentry](https://develop.sentry.de
 
 #### Use the latest version file
 ```html
-<script type="text/javascript" src="https://unpkg.com/sentry-javascript/index.js"></script>
+<script type="text/javascript" src="https://unpkg.com/sentry-javascript/dist/index.js"></script>
 ```
 
 #### Use the specified version file (recommended)
 ```html
-<script type="text/javascript" src="https://unpkg.com/sentry-javascript@1.0.0/index.js"></script>
+<script type="text/javascript" src="https://unpkg.com/sentry-javascript@1.0.0/dist/index.js"></script>
 ```
 
 ### Using npm
