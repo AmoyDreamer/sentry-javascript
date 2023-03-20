@@ -28,44 +28,44 @@ import { parseResponse, parseError, getBadRequestResponse, getResponseByCode } f
 import { CUSTOM_STATUS_DISABLE_UPLOAD_LOG, HTTP_STATUS_PAYLOAY_TOO_LARGE } from './constants'
 import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
-/** 允许设置的日志级别 */
+/** Log levels allowed to be set */
 const allowLogLevels = ['fatal', 'error', 'warning', 'info', 'debug']
-/** Sentry DSN 正则 */
+/** The regular expression of Sentry DSN */
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
-/** Sentry 项目版本号正则 */
+/** The regular expression of Sentry project version number */
 const releaseReg = /^.+@\d+\.\d+\.\d+$/
-/** Sentry SDK 版本号 */
+/** Sentry SDK version */
 const sdkVersion = '1.0.0'
-/** Sentry SDK 名称 */
+/** Sentry SDK name */
 const sdkName = 'sentry.javascript.browser'
-/** Sentry SDK 基本初始化配置项 */
+/** Sentry SDK basic initialization configuration */
 const basicOptions: BasicInitOptions = {
-  dsn: '',// Sentry DSN 配置
-  enabled: true,// 是否允许数据上报
-  debug: false,// 是否开启debug模式
-  platform: 'javascript',// 数据来源平台
-  level: 'error',// 日志级别，支持的值有fatal、error、warning、info、debug
-  serverName: window.location.hostname,// 标明记录事件的主机名
-  environment: 'production',// 环境名称，默认为生产环境
-  envelope: true,// 是否使用envelope接口上报数据
-  release: ''// 版本号
+  dsn: '',// Sentry log service DSN.
+  enabled: true,// Whether to allow data to be reported.
+  debug: false,// Whether to enable debug mode.
+  platform: 'javascript',// A string representing the platform the SDK is submitting from.
+  level: 'error',// Log level, the available values are "fatal" | "error" | "warning" | "info" | "debug".
+  serverName: window.location.hostname,// Identifies the host from which the event was recorded.
+  environment: 'production',// Environments that send log data, default value is "production".
+  envelope: true,// Whether to use the envelope interface to report data.
+  release: ''// Version number, suggested format my-project-name@1.0.0.
 }
-/** 初始化的 Sentry Scope User 基本配置项 */
+/** Initialized Sentry scope user basic configuration */
 const initUserOptions: UserOptions = {
-  ip_address: '{{auto}}'// 用户ip地址，此处默认为服务器自动获取
+  ip_address: '{{auto}}'// User ip address, where the default is automatically obtained by the server.
 }
-/** Sentry Scope User 配置项 */
+/** Sentry scope user configuration */
 let userOptions: UserOptions = {
   ...initUserOptions
 }
-/** Sentry Scope Tags 配置项 */
+/** Sentry scope tags configuration */
 let tagOptions: TagOptions = {}
-/** Sentry Scope Extra 配置项 */
+/** Sentry scope extra information configuration */
 let extraOptions: ExtraOptions = {}
-/** Sentry Scope 可选的日志级别 */
+/** Sentry scope optional log level */
 let optionalLevel = ''
 /**
- * @method 获取request options
+ * @method Get request configuration
  */
 function getRequestOptions(): RequestOptions {
   return {
@@ -78,7 +78,7 @@ function getRequestOptions(): RequestOptions {
   }
 }
 /**
- * @method 设置用户信息
+ * @method Set user information
  * @document https://develop.sentry.dev/sdk/event-payloads/user/
  */
 function setUser(options: UserOptions | null) {
@@ -98,7 +98,7 @@ function setUser(options: UserOptions | null) {
   }
 }
 /**
- * @method 设置自定义标签信息
+ * @method Set tags
  */
 function setTag(key: string, value: string) {
   if (typeof key !== 'string' || typeof value !== 'string') {
@@ -108,7 +108,7 @@ function setTag(key: string, value: string) {
   tagOptions[key] = value
 }
 /**
- * @method 移除自定义标签信息
+ * @method Remove Tags
  */
 function removeTag(key: string) {
   if (typeof key !== 'string') {
@@ -118,7 +118,7 @@ function removeTag(key: string) {
   delete tagOptions[key]
 }
 /**
- * @method 设置自定义扩展信息
+ * @method Set extra information
  */
 function setExtra(key: string, value: any) {
   if (typeof key !== 'string') {
@@ -128,7 +128,7 @@ function setExtra(key: string, value: any) {
   extraOptions[key] = value
 }
 /**
- * @method 移除自定义扩展信息
+ * @method Remove extra information
  */
 function removeExtra(key: string) {
   if (typeof key !== 'string') {
@@ -138,7 +138,7 @@ function removeExtra(key: string) {
   delete extraOptions[key]
 }
 /**
- * @method 设置日志级别
+ * @method Set log level
  */
 function setLevel(level: LogLevel) {
   if (!allowLogLevels.includes(level)) {
@@ -148,7 +148,7 @@ function setLevel(level: LogLevel) {
   optionalLevel = level
 }
 /**
- * @method 清空之前的 Scope User 配置
+ * @method Clear scope user configuration
  */
 function clearUserOptions() {
   userOptions = {
@@ -156,38 +156,38 @@ function clearUserOptions() {
   }
 }
 /**
- * @method 清空之前的 Scope Tags 配置
+ * @method Clear scope tag configuration
  */
 function clearTagOptions() {
   tagOptions = {}
 }
 /**
- * @method 清空之前的 Scope Extra 配置
+ * @method Clear scope extra configuration
  */
 function clearExtraOptions() {
   extraOptions = {}
 }
 /**
- * @method 清空之前的 Scope 日志级别
+ * @method Clear scope log level
  */
 function clearLevel() {
   optionalLevel = ''
 }
 /**
- * @method 清空所有Scope配置
+ * @method Clear all scope configurations
  */
 function clear() {
-  // 清空之前的 Scope 日志级别
+  // Clear scope log level
   clearLevel()
-  // 清空之前的 Scope User 配置
+  // Clear scope user configuration
   clearUserOptions()
-  // 清空之前的 Scope Tags 配置
+  // Clear scope tag configuration
   clearTagOptions()
-  // 清空之前的 Scope Extra 配置
+  // Clear scope extra configuration
   clearExtraOptions()
 }
 /**
- * @method 使用全局的Scope
+ * @method Using the global scope
  */
 export function configureScope(callback: ConfigureScopeCallback) {
   if (typeof callback !== 'function') {
@@ -206,45 +206,45 @@ export function configureScope(callback: ConfigureScopeCallback) {
   callback(scope)
 }
 /**
- * @method 初始化SDK
+ * @method Initializing Sentry SDK
  */
 export function init(options: SentryInitOptions) {
-  // 非法地配置项对象参数
+  // Illegal configuration item object parameter
   if (!isObject(options)) {
     basicOptions.debug && outputMsg('Method "init" must pass a object value, please check again!', 'error')
     return
   }
-  // 非法的dsn参数
+  // Illegal dsn parameter
   if (typeof options.dsn !== 'string') {
     basicOptions.debug && outputMsg('Method "init" must pass the value of "dsn" on options params, please check again!', 'error')
     return
   }
-  // 非法的dsn格式
+  // Illegal dsn format
   if (!dsnReg.test(options.dsn)) {
     basicOptions.debug && outputMsg('"dsn" must be a valid value, please check again!', 'error')
     return
   }
-  // 设置dsn
+  // Set dsn
   basicOptions.dsn = options.dsn
-  // 合法的enabled参数值
+  // Valid enabled parameter value
   if (typeof options.enabled === 'boolean') {
     basicOptions.enabled = options.enabled
   }
-  // 合法的envelope参数值
+  // Valid envelope parameter value
   if (typeof options.envelope === 'boolean') {
     basicOptions.envelope = options.envelope
   }
-  // 合法的debug参数值
+  // Valid debug parameter value
   if (typeof options.debug === 'boolean') {
     basicOptions.debug = options.debug
   }
-  // 合法的environment参数值
+  // Valid environment parameter value
   if (typeof options.environment === 'string') {
     basicOptions.environment = options.environment
   }
-  // release可选参数值校验
+  // The verification of release optional parameter value
   if (typeof options.release === 'string') {
-    // 非法的release参数值
+    // Valid release parameter value
     if (!releaseReg.test(options.release)) {
       basicOptions.debug && outputMsg('The option parameter "release" in the method "init" must be a string in the format "my-project-name@1.0.0", please check again!', 'error')
       return
@@ -253,7 +253,7 @@ export function init(options: SentryInitOptions) {
   }
 }
 /**
- * @method 解析DSN地址
+ * @method Parse DSN address
  */
 function parseDSN(): ApiOptions {
   const matches: string[] | null = dsnReg.exec(basicOptions.dsn)
@@ -271,7 +271,7 @@ function parseDSN(): ApiOptions {
   }
 }
 /**
- * @method 获取api地址　
+ * @method Get API address
  */
 function getAPIAddress(): string {
   const key: string = basicOptions.envelope ? 'envelope' : 'store'
@@ -280,15 +280,15 @@ function getAPIAddress(): string {
   return url
 }
 /**
- * @method 获取store接口请求配置
+ * @method Get store interface request configuration
  */
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
-  // 构造请求头
+  // Constructing request headers
   const headers: HttpHeader = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   }
-  // 解构需要独立处理的配置项
+  // Deconstruct configuration items that need to be handled independently
   const {
     user = {},
     request = {},
@@ -297,7 +297,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     level,
     ...restOptions
   } = options
-  // 构造目标请求数据
+  // Constructing target request data
   const payload: StoreApiOptions = {
     platform: basicOptions.platform,
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : (optionalLevel || basicOptions.level) as LogLevel,
@@ -328,11 +328,11 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
   }
 }
 /**
- * @method 通过envelope接口请求配置
+ * @method Get envelope interface request configuration
  * @document https://develop.sentry.dev/sdk/envelopes/#serialization-format
  */
 function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions {
-  // 解构需要独立处理的配置项
+  // Deconstruct configuration items that need to be handled independently
   const {
     user = {},
     request = {},
@@ -344,7 +344,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     ...restOptions
   } = options
   const headers: HttpHeader = {}
-  // 构造目标请求数据
+  // Constructing target request data
   const targetPayload: EnvelopeApiOptions = {
     platform: basicOptions.platform,
     level: typeof level === 'string' && allowLogLevels.includes(level) ? level : (optionalLevel || basicOptions.level) as LogLevel,
@@ -383,20 +383,20 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
   }
 }
 /**
- * @method 上传日志到服务器
+ * @method Upload logs to the server
  */
 async function uploadLog(options: SentryCaptureOptions) {
   const requestOptions: UploadRequestOptions = basicOptions.envelope ? getEnvelopeOptions(options) : getStoreOptions(options)
   const url = requestOptions.url
   const headers: HttpHeader = requestOptions.headers
   const payload = requestOptions.payload
-  // 上传的日志内容超出限制大小
+  // The uploaded log content exceeds the size limit
   if (isOversized(payload)) {
     const res = getResponseByCode(HTTP_STATUS_PAYLOAY_TOO_LARGE)
     basicOptions.debug && outputMsg(res.message, 'error')
     return Promise.resolve(res)
   }
-  // 发送相关数据到服务器
+  // Sending relevant data to the server
   return request(url, {
     method: 'POST',
     headers: headers,
@@ -406,62 +406,62 @@ async function uploadLog(options: SentryCaptureOptions) {
   .catch(parseError)
 }
 /**
- * @method 捕获信息
+ * @method Capture message
  * @document basic options => https://develop.sentry.dev/sdk/event-payloads
  * @document message options => https://develop.sentry.dev/sdk/event-payloads/message/
  */
 export function captureMessage(message: string, options?: LogLevel | SentryCaptureOptions) {
-  // 未配置dsn，则禁止上传
+  // If dsn is not configured, uploading is disabled
   if (!basicOptions.dsn) {
     const errMsg = 'Please check if the "init" method was called!'
     basicOptions.debug && outputMsg(errMsg, 'error')
     return Promise.resolve(getBadRequestResponse(errMsg))
   }
-  // 禁止上传日志
+  // Disable uploading logs
   if (!basicOptions.enabled) {
     const res = getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG)
     basicOptions.debug && outputMsg(res.message, 'warn')
     return Promise.resolve(res)
   }
-  // 非法信息数据
+  // Illegal information data
   if (typeof message !== 'string' || message === '') {
     const errMsg = 'Method "captureMessage" must pass a valid string value on parameter "message", please check again!'
     basicOptions.debug && outputMsg(errMsg, 'error')
     return Promise.resolve(getBadRequestResponse(errMsg))
   }
-  // 预设配置
+  // Preset configuration
   const presetOptions: SentryCaptureOptions = {
     level: (optionalLevel || 'info') as LogLevel
   }
-  // 如果没有可选配置项，直接抛数据
+  // If there is no optional configuration, send directly data.
   if (typeof options === 'undefined') {
-    // 上传日志
+    // upload log
     return uploadLog({
       message: message,
       ...presetOptions
     })
   }
-  // 如果有可选配置项，且为字符串，则确认是不是正确的日志级别配置
+  // If there is an optional configuration item and it is a string, confirm that it is the correct log level configuration.
   if (typeof options === 'string') {
-    // 如果是允许设置的日志级别，则更新
+    // If log level is allowed to be set, update the configuration.
     if (allowLogLevels.includes(options)) {
       presetOptions.level = options
     }
-    // 上传日志
+    // upload log
     return uploadLog({
       message: message,
       ...presetOptions
     })
   }
-  // 非法地配置项对象参数
+  // Illegal configuration parameter
   if (!isObject(options)) {
     const errMsg = 'Method "captureMessage" must pass a string or object value on parameter "options", please check again!'
     basicOptions.debug && outputMsg(errMsg, 'error')
     return Promise.resolve(getBadRequestResponse(errMsg))
   }
-  // 存在可选配置项，则特殊处理message参数
+  // If an optional configuration item exists, the message parameter is handled specially.
   const { message: msg = message, ...restOptions } = options
-  // 上传日志
+  // upload log
   return uploadLog({
     message: msg,
     ...presetOptions,
@@ -469,31 +469,31 @@ export function captureMessage(message: string, options?: LogLevel | SentryCaptu
   })
 }
 /**
- * @method 捕获异常
+ * @method Capture exception
  */
 export function captureException(err: Error, options?: SentryCaptureOptions) {
-  // 未配置dsn，则禁止上传
+  // If dsn is not configured, uploading is disabled
   if (!basicOptions.dsn) {
     const errMsg = 'Please check if the "init" method was called!'
     basicOptions.debug && outputMsg(errMsg, 'error')
     return Promise.resolve(getBadRequestResponse(errMsg))
   }
-  // 禁止上传日志
+  // Disable uploading logs
   if (!basicOptions.enabled) {
     const res = getResponseByCode(CUSTOM_STATUS_DISABLE_UPLOAD_LOG)
     basicOptions.debug && outputMsg(res.message, 'warn')
     return Promise.resolve(res)
   }
-  // 非法的err配置项
+  // Illegal err parameter value
   if (typeof err !== 'object' || !(err instanceof Error)) {
     const errMsg = 'Method "captureException" must pass a stantard instance of Error class on parameter "err", please check again!'
     basicOptions.debug && outputMsg(errMsg, 'error')
     return Promise.resolve(getBadRequestResponse(errMsg))
   }
-  // 解析获取堆栈
+  // Parsing to get the stack
   const stackFrames: StackFrame[] = ErrorStackParser.parse(err)
   let frames: StackTraceFrameItem[] = []
-  // 存在有堆栈的场景下格式化堆栈信息
+  // Formatting stack information if a stack exists
   if (stackFrames.length > 0) {
     frames = stackFrames.map((item: StackFrame) => ({
       function: item.functionName || '',
@@ -513,22 +513,22 @@ export function captureException(err: Error, options?: SentryCaptureOptions) {
       }
     }]
   }
-  // 如果没有可选配置项，直接抛数据
+  // If there is no optional configuration, send directly data.
   if (typeof options === 'undefined') {
-    // 上传日志
+    // upload log
     return uploadLog({
       exception: exceptionOption
     })
   }
-  // 非法地配置项对象参数
+  // Illegal configuration parameter
   if (!isObject(options)) {
     const errMsg = 'Method "captureException" must pass a object value on parameter "options", please check again!'
     basicOptions.debug && outputMsg(errMsg, 'error')
     return Promise.resolve(getBadRequestResponse(errMsg))
   }
-  // 存在可选配置项，则特殊处理exception参数
+  // If an optional configuration item exists, the exception parameter is handled specially.
   const { exception = {}, ...restOptions } = options
-  // 上传日志
+  // upload log
   return uploadLog({
     exception: {
       ...exceptionOption,
