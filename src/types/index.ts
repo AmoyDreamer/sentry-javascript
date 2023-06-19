@@ -99,6 +99,15 @@ export interface ExceptionItem {
 export interface ExceptionOptions {
   values: ExceptionItem[]
 }
+/** breadcrumbs parameter configuration, see the document "https://develop.sentry.dev/sdk/event-payloads/breadcrumbs/" for details. */
+export interface BreadcrumbItem {
+  type?: 'default' | 'debug' | 'error' | 'navigation' | 'http' | 'info' | 'query' | 'user'
+  category?: string
+  message?: string
+  data?: StringValueObject | null
+  level?: LogLevel
+  timestamp?: string | number
+}
 /** Optional base configuration */
 interface OptionalBaseOptions {
   /** A string representing the platform the SDK is submitting from. */
@@ -118,6 +127,7 @@ interface OptionalInterfaceOptions {
   request: RequestOptions
   tags?: TagOptions
   extra?: ExtraOptions
+  breadcrumbs?: BreadcrumbItem[]
 }
 /** API basic parameter */
 export type BasicApiOptions = OptionalBaseOptions & OptionalInterfaceOptions
@@ -193,7 +203,11 @@ export interface SentryScope {
   removeExtra: (key: string) => void
   /** set log level */
   setLevel: (level: LogLevel) => void
-  /** Clear all scope configurations */
+  /** add breadcrumb record */
+  addBreadcrumb: (breadcrumb: BreadcrumbItem) => void
+  /** clear breadcrumb records */
+  clearBreadcrumbs: () => void
+  /** clear all scope configurations */
   clear: () => void
 }
 /** Callback function of global scope method */

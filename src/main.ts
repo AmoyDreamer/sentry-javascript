@@ -15,6 +15,7 @@ import type {
   ExtraOptions,
   ExceptionOptions,
   StackTraceFrameItem,
+  BreadcrumbItem,
   RequestOptions,
   SentryScope,
   ConfigureScopeCallback
@@ -30,6 +31,8 @@ import ErrorStackParser from 'error-stack-parser'
 import type { StackFrame } from 'error-stack-parser'
 /** Log levels allowed to be set */
 const allowLogLevels = ['fatal', 'error', 'warning', 'info', 'debug']
+/** Breadcrumb types allowed to be set */
+const allowBreadcrumbTypes = ['default', 'debug', 'error', 'navigation', 'http', 'info', 'query', 'user']
 /** The regular expression of Sentry DSN */
 const dsnReg = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/
 /** The regular expression of Sentry project version number */
@@ -64,6 +67,8 @@ let tagOptions: TagOptions = {}
 let extraOptions: ExtraOptions = {}
 /** Sentry scope optional log level */
 let optionalLevel = ''
+/** Sentry scope breadcrumbs configuration */
+let breadcrumbRecords: BreadcrumbItem[] = []
 /**
  * @method Get request configuration
  */
@@ -148,6 +153,62 @@ function setLevel(level: LogLevel) {
   optionalLevel = level
 }
 /**
+ * @method Add breadcrumb record
+ */
+function addBreadcrumb(breadcrumb: BreadcrumbItem) {
+  // Illegal breadcrumb record
+  if (!isObject(breadcrumb)) {
+    basicOptions.debug && outputMsg('Method "addBreadcrumb" must pass a object value, please check again!', 'error')
+    return
+  }
+  const {
+    type = 'default',
+    category = '',
+    message = '',
+    data = null,
+    level = 'info',
+    timestamp = new Date().toISOString()
+  } = breadcrumb
+  // Illegal type
+  if (typeof type !== 'undefined' && (typeof type !== 'string' || !allowBreadcrumbTypes.includes(type))) {
+    basicOptions.debug && outputMsg('The option parameter "type" in the method "addBreadcrumb" must be a valid string value, please check again!', 'error')
+    return
+  }
+  // Illegal category
+  if (!['undefined', 'string'].includes(typeof category)) {
+    basicOptions.debug && outputMsg('The option parameter "category" in the method "addBreadcrumb" must be a string value, please check again!', 'error')
+    return
+  }
+  // Illegal message
+  if (!['undefined', 'string'].includes(typeof message)) {
+    basicOptions.debug && outputMsg('The option parameter "message" in the method "addBreadcrumb" must be a string value, please check again!', 'error')
+    return
+  }
+  // Illegal data
+  if (!['undefined', 'object'].includes(typeof data)) {
+    basicOptions.debug && outputMsg('The option parameter "data" in the method "addBreadcrumb" must be a object value, please check again!', 'error')
+    return
+  }
+  // Illegal level
+  if (typeof level !== 'undefined' && (typeof level !== 'string' || allowLogLevels.includes(level))) {
+    basicOptions.debug && outputMsg('The option parameter "level" in the method "addBreadcrumb" must be a valid string value, please check again!', 'error')
+    return
+  }
+  // Illegal timestamp
+  if (!['undefined', 'string', 'number'].includes(typeof timestamp)) {
+    basicOptions.debug && outputMsg('The option parameter "timestamp" in the method "addBreadcrumb" must be a valid string or number value, please check again!', 'error')
+    return
+  }
+  breadcrumbRecords.push({
+    type,
+    category,
+    message,
+    data,
+    level,
+    timestamp
+  })
+}
+/**
  * @method Clear scope user configuration
  */
 function clearUserOptions() {
@@ -174,6 +235,12 @@ function clearLevel() {
   optionalLevel = ''
 }
 /**
+ * @method Clear scope breadcrumbs configuration
+ */
+function clearBreadcrumbs() {
+  breadcrumbRecords = []
+}
+/**
  * @method Clear all scope configurations
  */
 function clear() {
@@ -185,6 +252,8 @@ function clear() {
   clearTagOptions()
   // Clear scope extra configuration
   clearExtraOptions()
+  // Clear scope breadcrumbs configuration
+  clearBreadcrumbs()
 }
 /**
  * @method Using the global scope
@@ -201,6 +270,8 @@ export function configureScope(callback: ConfigureScopeCallback) {
     setExtra,
     removeExtra,
     setLevel,
+    addBreadcrumb,
+    clearBreadcrumbs,
     clear
   }
   callback(scope)
@@ -280,6 +351,12 @@ function getAPIAddress(): string {
   return url
 }
 /**
+ * @method Get breadcrumbs configuration
+ */
+function getBreadcrumbs(data: any): BreadcrumbItem[] {
+  return Array.isArray(data) && data.length > 0 ? data : breadcrumbRecords
+}
+/**
  * @method Get store interface request configuration
  */
 function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
@@ -294,6 +371,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
     request = {},
     tags = {},
     extra = {},
+    breadcrumbs = [],
     level,
     ...restOptions
   } = options
@@ -319,6 +397,7 @@ function getStoreOptions(options: SentryCaptureOptions) : UploadRequestOptions {
       ...tags
     },
     extra: deepMerge(extraOptions, extra),
+    breadcrumbs: getBreadcrumbs(breadcrumbs),
     ...restOptions
   }
   return {
@@ -338,6 +417,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
     request = {},
     tags = {},
     extra = {},
+    breadcrumbs = [],
     type = 'event',
     level,
     event_id = '',
@@ -362,6 +442,7 @@ function getEnvelopeOptions(options: SentryCaptureOptions): UploadRequestOptions
       ...tags
     },
     extra: deepMerge(extraOptions, extra),
+    breadcrumbs: getBreadcrumbs(breadcrumbs),
     ...restOptions
   }
   const payloadHeaders: EnvelopePayloadHeaderOptions = {
