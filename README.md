@@ -247,6 +247,47 @@ Sentry.configureScope((scope) => {
 })
 ```
 
+##### Add breadcrumb record
+
+**addBreadcrumb**
+| parameter | description | type | required | default value |
+|---|---|---|---|---|
+| breadcrumb | breadcrumb record | object | ✅ | - |
+
+```js
+Sentry.configureScope((scope) => {
+  scope.addBreadcrumb({
+    "timestamp": "2023-06-19T06:56:32.306Z",
+    "message": "Something happened",
+    "category": "log",
+    "data": {
+      "foo": "bar",
+      "blub": "blah"
+    }
+  })
+})
+```
+
+##### Clear breadcrumb records
+
+**clearBreadcrumbs**
+
+```js
+Sentry.configureScope((scope) => {
+  // clear the previous scope breadcrumb records
+  scope.clearBreadcrumbs()
+  // add breadcrumb record
+  scope.addBreadcrumb({
+    "timestamp": "2023-06-19T06:56:55.266Z",
+    "type": "navigation",
+    "data": {
+      "from": "/login",
+      "to": "/dashboard"
+    }
+  })
+})
+```
+
 ##### Clear the global scope configuration
 
 **clear()**
@@ -275,6 +316,7 @@ This configuration note is only for `Sentry.captureMessage` and `Sentry.captureE
 | user | Current authenticated user information, see [User Definition](https://develop.sentry.dev/sdk/event-payloads/user/) for details. | object | ❌ | `{ip_address: '{{auto}}'}` |
 | tags | A map or list of tags for this event. Each tag must be less than 200 characters, see [Event Payloads](https://develop.sentry.dev/sdk/event-payloads/) for details. | object | ❌ | - |
 | extra | An arbitrary mapping of additional metadata to store with the event, see [Event Payloads](https://develop.sentry.dev/sdk/event-payloads/) for details. | object | ❌ | - |
+| breadcrumbs | A list of breadcrumb records to describe the track of events，see [Breadcrumbs Definition](https://develop.sentry.dev/sdk/event-payloads/breadcrumbs/) for details. | array | ❌ | - |
 
 ### Return value description of capture method
 
