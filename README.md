@@ -12,7 +12,7 @@ A generic Javascript SDK based on [Self-Hosted Sentry](https://develop.sentry.de
 
 #### Use the specified version file (recommended)
 ```html
-<script type="text/javascript" src="https://unpkg.com/sentry-javascript@1.0.2/dist/index.js"></script>
+<script type="text/javascript" src="https://unpkg.com/sentry-javascript@1.0.3/dist/index.js"></script>
 ```
 
 ### Using npm
