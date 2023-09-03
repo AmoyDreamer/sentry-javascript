@@ -190,7 +190,7 @@ function addBreadcrumb(breadcrumb: BreadcrumbItem) {
     return
   }
   // Illegal level
-  if (typeof level !== 'undefined' && (typeof level !== 'string' || allowLogLevels.includes(level))) {
+  if (typeof level !== 'undefined' && (typeof level !== 'string' || !allowLogLevels.includes(level))) {
     basicOptions.debug && outputMsg('The option parameter "level" in the method "addBreadcrumb" must be a valid string value, please check again!', 'error')
     return
   }
