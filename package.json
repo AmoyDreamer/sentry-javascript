@@ -1,6 +1,6 @@
 {
   "name": "sentry-javascript",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A generic Javascript SDK based on Self-Hosted Sentry.",
   "type": "module",
   "main": "./dist/index.js",

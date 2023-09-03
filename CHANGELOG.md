@@ -1,4 +1,8 @@
-## 1.0.2（Jun 19, 2023）
+## 1.0.3 (Sep 3, 2023)
+
+* Fix issue with incorrect validation of data validity of `level` field within `addBreadcrumb` method
+
+## 1.0.2 (Jun 19, 2023)
 
 * Add `addBreadcrumb` and `clearBreadcrumbs` scope methods
 * Update `captureMessage` and `captureException` methods, support breadcrumbs configuration
